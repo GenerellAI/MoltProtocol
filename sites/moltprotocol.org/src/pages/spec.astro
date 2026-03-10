@@ -2,23 +2,27 @@
 import SpecLayout from '../layouts/SpecLayout.astro';
 import { parseSpec } from '../lib/parse-spec';
 import { readFile } from 'node:fs/promises';
-import { resolve } from 'node:path';
 
-async function loadSpec(relPath: string, fallbackLabel: string): Promise<string> {
-  const primary = resolve(process.cwd(), '../../' + relPath);
-  try {
-    return await readFile(primary, 'utf-8');
-  } catch {
+async function loadSpec(relPaths: string[], fallbackLabel: string): Promise<string> {
+  for (const relPath of relPaths) {
     try {
-      return await readFile(resolve(process.cwd(), '../..', relPath), 'utf-8');
+      return await readFile(new URL(relPath, import.meta.url), 'utf-8');
     } catch {
-      return `# ${fallbackLabel}\n\nSpec file not found. Build from the monorepo root.`;
+      continue;
     }
   }
+
+  return `# ${fallbackLabel}\n\nSpec file not found.`;
 }
 
-const protocolSpec = await loadSpec('core/moltprotocol/SPEC.md', 'MoltProtocol Specification');
-const numberSpec = await loadSpec('core/moltnumber/SPEC.md', 'MoltNumber Specification');
+const protocolSpec = await loadSpec(
+  ['../../../../packages/core/SPEC.md', '../../../../core/moltprotocol/SPEC.md'],
+  'MoltProtocol Specification'
+);
+const numberSpec = await loadSpec(
+  ['../../../../packages/moltnumber/SPEC.md', '../../../../core/moltnumber/SPEC.md'],
+  'MoltNumber Specification'
+);
 
 const numberSpecBody = numberSpec.replace(/^# MoltNumber Specification\s*\n+/, '');
 const numberSpecBreak = [
