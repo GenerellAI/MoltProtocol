@@ -6,3 +6,11 @@ __pycache__/
 *.egg-info/
 .venv/
 .astro/
+
+# Secrets — never commit keys
+.root-keypair.json
+*.pem
+*.key
+.env
+.env.*
+!.env.example
