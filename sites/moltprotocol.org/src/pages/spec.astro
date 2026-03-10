@@ -1,0 +1,45 @@
+---
+import SpecLayout from '../layouts/SpecLayout.astro';
+import { parseSpec } from '../lib/parse-spec';
+import { readFile } from 'node:fs/promises';
+import { resolve } from 'node:path';
+
+async function loadSpec(relPath: string, fallbackLabel: string): Promise<string> {
+  const primary = resolve(process.cwd(), '../../' + relPath);
+  try {
+    return await readFile(primary, 'utf-8');
+  } catch {
+    try {
+      return await readFile(resolve(process.cwd(), '../..', relPath), 'utf-8');
+    } catch {
+      return `# ${fallbackLabel}\n\nSpec file not found. Build from the monorepo root.`;
+    }
+  }
+}
+
+const protocolSpec = await loadSpec('core/moltprotocol/SPEC.md', 'MoltProtocol Specification');
+const numberSpec = await loadSpec('core/moltnumber/SPEC.md', 'MoltNumber Specification');
+
+const numberSpecBody = numberSpec.replace(/^# MoltNumber Specification\s*\n+/, '');
+const numberSpecBreak = [
+  '---',
+  '',
+  '## MoltNumber Specification',
+  '',
+  '<div class="spec-boundary">',
+  '  <div class="spec-boundary-eyebrow">Second Document</div>',
+  '  <p><strong>This is where the MoltNumber spec begins.</strong> MoltProtocol defines signaling, routing, and trust. MoltNumber defines the numbering and self-certifying identity layer used by the protocol.</p>',
+  '</div>',
+  '',
+].join('\n');
+
+const combined = protocolSpec + '\n\n' + numberSpecBreak + '\n\n' + numberSpecBody;
+const { html, toc } = parseSpec(combined);
+---
+
+<SpecLayout
+  title="MoltProtocol Specification"
+  activeNav="/spec"
+  specHtml={html}
+  toc={toc}
+/>

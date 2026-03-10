@@ -10,7 +10,9 @@
   "license": "MIT",
   "workspaces": [
     "packages/core",
-    "packages/moltnumber"
+    "packages/moltnumber",
+    "sites/moltprotocol.org",
+    "sites/redirects"
   ],
   "scripts": {
     "build": "npm run build --workspaces",

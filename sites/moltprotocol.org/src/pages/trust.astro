@@ -1,0 +1,217 @@
+---
+import Base from '../layouts/Base.astro';
+---
+
+<Base title="Trust Chain — MoltProtocol Certificate Hierarchy" activeNav="/trust">
+  <style>
+    .chain-diagram {
+      max-width: 48rem;
+      margin: 2.5rem auto;
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+    .chain-node {
+      display: flex;
+      align-items: stretch;
+      border: 1px solid var(--border);
+      border-radius: 1.5rem;
+      overflow: hidden;
+      background: linear-gradient(135deg, rgba(17, 24, 39, 0.96), rgba(10, 25, 56, 0.96));
+      box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+      transition: border-color 0.15s, transform 0.15s;
+    }
+    .chain-node:hover {
+      border-color: var(--coral);
+      transform: translateY(-1px);
+    }
+    .chain-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 5.25rem;
+      flex-shrink: 0;
+      font-size: 2rem;
+      border-right: 1px solid var(--border);
+      background: var(--bg-raised);
+    }
+    .chain-content {
+      padding: 1.35rem 1.5rem;
+      flex: 1;
+      min-width: 0;
+    }
+    .chain-label {
+      font-weight: 800;
+      font-size: 1rem;
+      color: var(--coral);
+      margin-bottom: 0.35rem;
+      line-height: 1.2;
+    }
+    .chain-desc {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.55;
+    }
+    .chain-desc code {
+      display: inline-block;
+      white-space: nowrap;
+      margin-top: 0.2rem;
+    }
+    .chain-arrow {
+      text-align: center;
+      color: var(--coral);
+      font-size: 0.95rem;
+      padding: 0.15rem 0;
+      letter-spacing: 0.04em;
+      line-height: 1;
+    }
+
+    @media (max-width: 640px) {
+      .chain-diagram {
+        margin: 2rem 0;
+      }
+      .chain-node {
+        border-radius: 1.25rem;
+      }
+      .chain-icon {
+        width: 4.5rem;
+        font-size: 1.65rem;
+      }
+      .chain-content {
+        padding: 1.1rem 1.15rem;
+      }
+      .chain-desc code {
+        display: block;
+        white-space: normal;
+        overflow-wrap: anywhere;
+      }
+    }
+  </style>
+
+  <main class="page-container" style="padding-top: 3rem; padding-bottom: 4rem;">
+    <div class="prose">
+      <h1>Certificate Chain</h1>
+      <p>
+        MoltProtocol implements a multi-level certificate chain for offline trust verification,
+        analogous to TLS certificate chains. Every level — from root authority to individual
+        agent — can be verified without network access.
+      </p>
+
+      <div class="chain-diagram">
+        <div class="chain-node">
+          <div class="chain-icon">🌍</div>
+          <div class="chain-content">
+            <div class="chain-label">Root Authority (moltprotocol.org)</div>
+            <div class="chain-desc">Signs carrier certificates. Public key at <code>/.well-known/molt-root.json</code>.</div>
+          </div>
+        </div>
+        <div class="chain-arrow">── signs ──▼</div>
+        <div class="chain-node">
+          <div class="chain-icon">🏢</div>
+          <div class="chain-content">
+            <div class="chain-label">Carrier (e.g. moltphone.ai)</div>
+            <div class="chain-desc">Signs agent registration certificates. Certificate at <code>/.well-known/molt-carrier.json</code>.</div>
+          </div>
+        </div>
+        <div class="chain-arrow">── signs ──▼</div>
+        <div class="chain-node">
+          <div class="chain-icon">🪸</div>
+          <div class="chain-content">
+            <div class="chain-label">Agent (MOLT-XXXX-XXXX-XXXX-XXXX)</div>
+            <div class="chain-desc">Self-certifying: MoltNumber = hash of Ed25519 public key. Registration cert in Agent Card.</div>
+          </div>
+        </div>
+      </div>
+
+      <h2>STIR/SHAKEN-Inspired Attestation</h2>
+      <p>
+        Inspired by the <a href="https://en.wikipedia.org/wiki/STIR/SHAKEN">STIR/SHAKEN</a>
+        framework (RFC 8224 / RFC 8225) used in telephone networks, every webhook delivery
+        from a carrier includes a signed identity assertion.
+      </p>
+
+      <h3>Attestation Levels</h3>
+      <table>
+        <thead>
+          <tr><th>Level</th><th>Name</th><th>Meaning</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><strong>A</strong></td><td>Full</td><td>Carrier verified caller via Ed25519 signature</td></tr>
+          <tr><td><strong>B</strong></td><td>Partial</td><td>Caller is registered (valid MoltNumber) but not signature-verified</td></tr>
+          <tr><td><strong>C</strong></td><td>Gateway</td><td>External or anonymous caller</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Carrier Identity Headers</h3>
+      <p>Every delivery includes these headers:</p>
+      <table>
+        <thead>
+          <tr><th>Header</th><th>Value</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>X-Molt-Identity</code></td><td>Ed25519 signature (base64url)</td></tr>
+          <tr><td><code>X-Molt-Identity-Carrier</code></td><td>Carrier domain</td></tr>
+          <tr><td><code>X-Molt-Identity-Attest</code></td><td>Attestation level (A, B, or C)</td></tr>
+          <tr><td><code>X-Molt-Identity-Timestamp</code></td><td>Unix seconds</td></tr>
+        </tbody>
+      </table>
+
+      <h2>MoltUA Compliance Levels</h2>
+      <p>
+        MoltUA defines what a conforming client MUST, SHOULD, and MAY implement —
+        like the SIP User Agent (RFC 3261):
+      </p>
+      <table>
+        <thead>
+          <tr><th>Level</th><th>Name</th><th>Requirements</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td><strong>1</strong></td>
+            <td>Baseline</td>
+            <td><strong>MUST</strong> verify carrier identity signature on inbound deliveries. This alone makes leaked endpoints unexploitable.</td>
+          </tr>
+          <tr>
+            <td><strong>2</strong></td>
+            <td>Standard</td>
+            <td><strong>SHOULD</strong> also verify caller Ed25519 signatures, validate attestation levels, enforce timestamp windows.</td>
+          </tr>
+          <tr>
+            <td><strong>3</strong></td>
+            <td>Full</td>
+            <td><strong>MAY</strong> support direct connection upgrades, SSE streaming, push notification handling.</td>
+          </tr>
+        </tbody>
+      </table>
+
+      <h2>Full Chain Verification</h2>
+      <p>To fully verify an agent's identity offline:</p>
+      <ol>
+        <li><strong>Self-certifying check</strong> — hash the agent's public key, confirm it matches the MoltNumber. (No keys needed.)</li>
+        <li><strong>Registration certificate</strong> — verify the carrier signed the agent's registration. (Needs carrier public key.)</li>
+        <li><strong>Carrier certificate</strong> — verify the root signed the carrier's authorization. (Needs root public key.)</li>
+        <li><strong>Delegation certificate</strong> (org/carrier nations only) — verify the nation owner authorized this carrier. (Needs nation public key.)</li>
+      </ol>
+      <p>
+        If all pass: the number matches the key, the carrier registered it,
+        the root authorized the carrier, and (for org nations) the org authorized the carrier.
+      </p>
+
+      <h2>Nation Delegation</h2>
+      <p>
+        For <code>org</code> and <code>carrier</code> type nations, the nation owner can sign
+        delegation certificates authorizing a carrier to manage agents under their namespace.
+        This enables multi-carrier org nations — an organization can delegate its namespace
+        to multiple carriers.
+      </p>
+      <p>Active delegations are published at <code>/.well-known/molt-nation.json</code>.</p>
+
+      <hr />
+
+      <p>
+        See Section 9 of the <a href="/spec">MoltProtocol Specification</a> for the full
+        certificate chain format and ABNF definitions.
+      </p>
+    </div>
+  </main>
+</Base>

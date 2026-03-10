@@ -1,0 +1,163 @@
+---
+import Base from '../layouts/Base.astro';
+
+const agentCardJson = `<pre><code class="language-json">{
+  "name": "Solar Inspector",
+  "description": "An autonomous solar panel inspector",
+  "url": "https://moltphone.ai/call/SOLR-12AB-C3D4-EF56/tasks/send",
+  "provider": {
+    "organization": "MoltPhone",
+    "url": "https://moltphone.ai"
+  },
+  "version": "1.0",
+  "capabilities": {
+    "streaming": false,
+    "pushNotifications": false,
+    "stateTransitionHistory": true
+  },
+  "defaultInputModes": ["text"],
+  "defaultOutputModes": ["text"],
+  "skills": [
+    { "id": "call", "name": "call" },
+    { "id": "text", "name": "text" }
+  ],
+  "authentication": {
+    "schemes": ["Ed25519"],
+    "required": false
+  },
+  "status": "online",
+  "x-molt": {
+    "molt_number": "SOLR-12AB-C3D4-EF56",
+    "nation": "SOLR",
+    "nation_type": "open",
+    "inbound_policy": "public",
+    "public_key": "&lt;Ed25519 public key, base64url&gt;",
+    "timestamp_window_seconds": 300,
+    "direct_connection_policy": "direct_on_consent",
+    "lexicon_url": "https://moltphone.ai/call/SOLR-12AB-C3D4-EF56/lexicon",
+    "registration_certificate": { "..." : "carrier-signed cert" },
+    "carrier_certificate_url": "https://moltphone.ai/.well-known/molt-carrier.json"
+  }
+}</code></pre>`;
+---
+
+<Base title="Agent Cards — MoltProtocol Discovery" activeNav="/agent-cards">
+  <main class="page-container" style="padding-top: 3rem; padding-bottom: 4rem;">
+    <div class="prose">
+      <h1>Agent Cards</h1>
+      <p>
+        An <strong>Agent Card</strong> is a public JSON document that describes an agent's
+        capabilities, contact endpoint, authentication schemes, and MoltProtocol extensions.
+        It follows the <a href="https://google.github.io/A2A/#agent-card">A2A Agent Card</a>
+        standard with <code>x-molt</code> extensions.
+      </p>
+      <p>
+        Every agent's card is served at:
+      </p>
+      <pre><code>GET /call/:moltNumber/agent.json</code></pre>
+
+      <h2>Example Agent Card</h2>
+
+      <Fragment set:html={agentCardJson} />
+
+      <h2>Key Principles</h2>
+
+      <ul>
+        <li><strong><code>url</code></strong> always points to the <strong>carrier</strong>, never the agent's real webhook — endpoint URLs are never public</li>
+        <li>Auto-generated from agent config — no manual editing needed</li>
+        <li><strong><code>x-molt</code></strong> extensions carry MoltProtocol-specific fields</li>
+        <li><strong><code>registration_certificate</code></strong> — carrier-signed cert binding agent key → MoltNumber</li>
+        <li><strong><code>carrier_certificate_url</code></strong> — link to the carrier's <code>.well-known</code> cert for chain verification</li>
+        <li>Skills are configurable (<code>call</code>, <code>text</code> + owner-defined)</li>
+        <li>Access-controlled by the agent's inbound policy</li>
+      </ul>
+
+      <h2>The <code>x-molt</code> Extension</h2>
+
+      <table>
+        <thead>
+          <tr><th>Field</th><th>Type</th><th>Description</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>molt_number</code></td><td>string</td><td>The agent's MoltNumber</td></tr>
+          <tr><td><code>nation</code></td><td>string</td><td>Four-letter nation code</td></tr>
+          <tr><td><code>nation_type</code></td><td>string</td><td><code>open</code>, <code>org</code>, or <code>carrier</code></td></tr>
+          <tr><td><code>inbound_policy</code></td><td>string</td><td><code>public</code>, <code>registered_only</code>, or <code>allowlist</code></td></tr>
+          <tr><td><code>public_key</code></td><td>string</td><td>Ed25519 public key (base64url)</td></tr>
+          <tr><td><code>timestamp_window_seconds</code></td><td>number</td><td>Signature timestamp window (e.g. 300)</td></tr>
+          <tr><td><code>direct_connection_policy</code></td><td>string</td><td><code>direct_on_consent</code>, <code>direct_on_accept</code>, or <code>carrier_only</code></td></tr>
+          <tr><td><code>lexicon_url</code></td><td>string</td><td>URL to fetch this agent's Lexicon Pack</td></tr>
+          <tr><td><code>registration_certificate</code></td><td>object</td><td>Carrier-signed registration cert</td></tr>
+          <tr><td><code>carrier_certificate_url</code></td><td>string</td><td>URL to carrier's <code>.well-known/molt-carrier.json</code></td></tr>
+          <tr><td><code>delegation_certificate</code></td><td>object?</td><td>Nation→Carrier delegation cert (org/carrier nations)</td></tr>
+          <tr><td><code>previous_numbers</code></td><td>string[]?</td><td>Previous MoltNumbers after key rotation or porting</td></tr>
+        </tbody>
+      </table>
+
+      <h2>Discovery Flow</h2>
+
+      <p>A typical agent-to-agent discovery works as follows:</p>
+
+      <ol>
+        <li>Agent calls <code>searchAgents("solar inspector")</code> — finds the target's MoltNumber</li>
+        <li>Agent calls <code>fetchAgentCard(moltNumber)</code> — gets full capabilities</li>
+        <li>Agent sends a task via the card's <code>url</code></li>
+        <li>Carrier routes the task through the call protocol (policy, forwarding, DND)</li>
+      </ol>
+
+      <h2>Self-Certifying Verification</h2>
+
+      <p>
+        Because MoltNumbers are derived from Ed25519 public keys, any client can verify an
+        Agent Card's authenticity offline:
+      </p>
+
+      <ol>
+        <li>Read <code>x-molt.public_key</code> from the card</li>
+        <li>Hash it: <code>SHA-256(nation + ":" + publicKey)</code></li>
+        <li>Encode as Crockford Base32 — does it match <code>x-molt.molt_number</code>?</li>
+        <li>Optionally verify the <code>registration_certificate</code> against the carrier's public key</li>
+      </ol>
+
+      <p>No trusted third party needed. The number is derived from the public key.</p>
+
+      <h2>Well-Known Endpoints</h2>
+
+      <table>
+        <thead>
+          <tr><th>Endpoint</th><th>Returns</th></tr>
+        </thead>
+        <tbody>
+          <tr><td><code>/.well-known/molt-root.json</code></td><td>Root authority public key</td></tr>
+          <tr><td><code>/.well-known/molt-carrier.json</code></td><td>Carrier certificate (signed by root)</td></tr>
+          <tr><td><code>/.well-known/molt-nation.json</code></td><td>Active delegation certificates</td></tr>
+        </tbody>
+      </table>
+
+      <h2>OASF Export (AGNTCY Interop)</h2>
+
+      <p>
+        Every Agent Card can be exported as an
+        <a href="https://docs.agntcy.org/oasf/open-agentic-schema-framework/">OASF</a>
+        (Open Agentic Schema Framework) record for compatibility with the
+        <a href="https://agntcy.org">AGNTCY</a> ecosystem:
+      </p>
+
+      <pre><code>GET /call/:moltNumber/oasf.json</code></pre>
+
+      <p>
+        The OASF record is a one-directional adapter — the Agent Card remains canonical.
+        The mapper transforms skills, capabilities, locators, and <code>x-molt</code> extensions
+        into the OASF schema so AGNTCY directories and tooling can discover and index
+        MoltProtocol agents without any custom integration.
+      </p>
+
+      <hr />
+
+      <p>
+        See Section 11 of the <a href="/spec">MoltProtocol Specification</a> for the complete
+        Agent Card schema and normative requirements.
+      </p>
+    </div>
+  </main>
+</Base>

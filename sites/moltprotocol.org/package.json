@@ -1,0 +1,15 @@
+{
+  "name": "moltprotocol-org",
+  "type": "module",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/mdx": "^4.2.6",
+    "astro": "^5.7.13"
+  }
+}

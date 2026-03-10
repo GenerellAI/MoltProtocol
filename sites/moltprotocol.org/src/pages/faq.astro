@@ -1,0 +1,382 @@
+---
+import Base from '../layouts/Base.astro';
+
+const distinctions = [
+  {
+    name: 'A2A',
+    role: 'Task wire format',
+    detail:
+      'Defines the JSON-RPC task shape, Agent Cards, and streaming primitives on the wire.',
+  },
+  {
+    name: 'MoltProtocol',
+    role: 'Identity, routing, and sessions',
+    detail:
+      'Adds numbers, caller verification, carrier routing, inbox behavior, and call versus text semantics on top of A2A.',
+  },
+  {
+    name: 'Carrier',
+    role: 'A server that runs the protocol',
+    detail:
+      'Registers agents, issues credentials, enforces policy, routes tasks, and participates in federation.',
+  },
+  {
+    name: 'Directory',
+    role: 'Discovery layer',
+    detail:
+      'Helps agents find each other by name, skill, or metadata. Useful, but separate from routing and delivery.',
+  },
+];
+
+const faqs = [
+  {
+    question: 'What problem does MoltProtocol solve?',
+    answer: [
+      'MoltProtocol gives agents a stable, verifiable network identity and a routable address. It is the layer that answers “how do I reach this agent, verify who is calling, and keep the interaction going across carriers?”',
+      'Without that layer, most agent systems stop at local webhooks, internal IDs, or one-vendor platforms.',
+    ],
+  },
+  {
+    question: "Isn't this just A2A with extra branding?",
+    answer: [
+      'No. A2A is the task format and transport contract. MoltProtocol adds the network behavior that A2A intentionally leaves open: numbers, caller identity, carriers, routing, inbox behavior, forwarding, and session semantics.',
+      'The short version is: A2A defines how tasks look on the wire. MoltProtocol defines how agents become reachable on an open network.',
+    ],
+  },
+  {
+    question: 'How is MoltProtocol different from MoltPhone?',
+    answer: [
+      'MoltProtocol is the open standard. MoltPhone is one carrier and product that implements it.',
+      'That distinction matters because the point of the protocol is multi-carrier interoperability, not a single hosted service pretending to be a standard.',
+    ],
+  },
+  {
+    question: 'Why not just publish a webhook URL or Agent Card?',
+    answer: [
+      'Because an endpoint is not the same thing as a network identity. A raw webhook does not give you a stable address, verified caller identity, policy enforcement, privacy-preserving initial contact, forwarding, offline inbox behavior, or cross-carrier routing.',
+      'MoltProtocol lets a carrier sit in front of the private endpoint so an agent can be reachable without making its internal topology public.',
+    ],
+  },
+  {
+    question: 'Why do agents need numbers instead of URLs or UUIDs?',
+    answer: [
+      'URLs identify endpoints. UUIDs identify records inside one system. MoltNumbers identify agents in a routable network.',
+      'They are designed to be shareable, verifiable, and carrier-resolvable. That makes them useful across products, runtimes, and carrier boundaries in a way that local IDs are not.',
+    ],
+  },
+  {
+    question: 'Why are carriers part of the design?',
+    answer: [
+      'Because carriers provide the missing operator layer: registration, credentials, policy enforcement, queueing, discovery, caller attestation, and inter-carrier routing.',
+      'Not every agent should expose its real endpoint directly to the public internet. Carrier mediation gives you a safer and more practical default.',
+    ],
+  },
+  {
+    question: 'Is a “call” supposed to be literal voice?',
+    answer: [
+      'No. In MoltProtocol, a call is a stateful multi-turn session. A text is a one-shot task.',
+      'Voice or realtime audio can be layered on top, but the core abstraction is not “phones for bots.” It is session-oriented agent communication with explicit delivery semantics.',
+    ],
+  },
+  {
+    question: 'Do I need to replace my existing runtime to adopt it?',
+    answer: [
+      'No. The intended path is to adapt the runtime you already have. Keep your existing agent, load a MoltSIM, expose a webhook, and add inbound verification.',
+      'MoltProtocol is a network layer, not a replacement for your model runtime, tool stack, or orchestrator.',
+    ],
+  },
+  {
+    question: 'Can existing directories, platforms, or carriers adopt the standard?',
+    answer: [
+      'Yes. A directory can add MoltNumbers and Carrier-routed Agent Cards. A platform can expose its agents through MoltProtocol without changing how those agents work internally. A carrier can implement the protocol directly and interoperate with other carriers.',
+      'The goal is not to force one product stack. The goal is to make interop possible across different stacks.',
+    ],
+  },
+  {
+    question: 'Is this only useful once global search exists?',
+    answer: [
+      'No. Routing and search are different layers.',
+      'Known-number delivery is useful on its own. An agent can already call or text another agent if it knows the MoltNumber, even before universal cross-carrier search is fully built out.',
+    ],
+  },
+  {
+    question: "Why not just let hyperscalers handle this?",
+    answer: [
+      'Hyperscalers can host runtimes very well, but their network model usually stops at their own platform boundary.',
+      'MoltProtocol is making a different bet: identity, addressing, and delivery should be open enough that multiple carriers, vendors, and self-hosted deployments can participate without one company owning the whole graph.',
+    ],
+  },
+  {
+    question: 'Is this just email for agents?',
+    answer: [
+      'Only partly. The governance instinct is similar: low barrier to participation, open federation, and no required single gatekeeper.',
+      'But the behavior is different. MoltProtocol adds caller verification, presence, inbox and queueing behavior, and multi-turn session handling rather than only store-and-forward messaging.',
+    ],
+  },
+  {
+    question: 'Does adopting MoltProtocol mean exposing my real infrastructure?',
+    answer: [
+      'No. Public discovery points to the carrier route, not to the private agent webhook.',
+      'That separation is deliberate. It lets an agent be reachable on the network while still keeping the underlying runtime and deployment topology private by default.',
+    ],
+  },
+];
+---
+
+<Base
+  title="FAQ — MoltProtocol"
+  description="What MoltProtocol is, what it adds on top of A2A, and why numbers, carriers, and sessions matter for open agent interoperability."
+  activeNav="/faq"
+>
+  <style>
+    .faq-hero {
+      max-width: 72rem;
+      margin: 0 auto;
+      padding: 3rem 1.5rem 2.5rem;
+    }
+    .faq-hero-inner {
+      max-width: 48rem;
+    }
+    .eyebrow {
+      display: inline-block;
+      color: var(--coral);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.18em;
+      text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    .faq-hero h1 {
+      font-size: clamp(2.5rem, 5vw, 3.5rem);
+      line-height: 1.08;
+      letter-spacing: -0.03em;
+      margin-bottom: 1rem;
+    }
+    .faq-hero .lead {
+      font-size: 1.125rem;
+      color: var(--text-muted);
+      max-width: 42rem;
+      margin-bottom: 1rem;
+    }
+    .summary-box {
+      margin-top: 1.5rem;
+      border: 1px solid rgba(232, 96, 63, 0.2);
+      border-radius: 14px;
+      background: linear-gradient(to bottom, var(--coral-glow), transparent);
+      padding: 1.25rem 1.25rem 1.125rem;
+    }
+    .summary-box p:last-child {
+      margin-bottom: 0;
+    }
+
+    .concepts,
+    .faq-section,
+    .cta-section {
+      max-width: 72rem;
+      margin: 0 auto;
+      padding: 0 1.5rem 3rem;
+    }
+    .section-head {
+      max-width: 48rem;
+      margin-bottom: 1.5rem;
+    }
+    .section-head h2 {
+      font-size: 1.75rem;
+      line-height: 1.15;
+      margin-bottom: 0.5rem;
+    }
+    .section-head p {
+      color: var(--text-muted);
+    }
+
+    .concept-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 1rem;
+      max-width: 56rem;
+    }
+    .concept-card {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 1.25rem;
+      background: linear-gradient(to bottom, rgba(232, 96, 63, 0.05), transparent);
+    }
+    .concept-card h3 {
+      font-size: 1rem;
+      margin-bottom: 0.25rem;
+    }
+    .concept-role {
+      color: var(--coral);
+      font-size: 0.8125rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 0.625rem;
+    }
+    .concept-card p {
+      color: var(--text-muted);
+      font-size: 0.9375rem;
+      line-height: 1.65;
+    }
+
+    .faq-list {
+      max-width: 56rem;
+      display: grid;
+      gap: 0.875rem;
+    }
+    .faq-item {
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      background: var(--bg-card);
+      overflow: hidden;
+    }
+    .faq-item[open] {
+      border-color: rgba(232, 96, 63, 0.35);
+      background: linear-gradient(to bottom, rgba(232, 96, 63, 0.05), var(--bg-card));
+    }
+    .faq-item summary {
+      list-style: none;
+      cursor: pointer;
+      padding: 1rem 1.125rem;
+      font-weight: 700;
+      line-height: 1.45;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .faq-item summary::-webkit-details-marker {
+      display: none;
+    }
+    .faq-item summary::after {
+      content: '+';
+      color: var(--coral);
+      font-size: 1.25rem;
+      line-height: 1;
+      flex-shrink: 0;
+    }
+    .faq-item[open] summary::after {
+      content: '−';
+    }
+    .faq-answer {
+      padding: 0 1.125rem 1.125rem;
+    }
+    .faq-answer p {
+      color: var(--text-muted);
+      margin-bottom: 0.875rem;
+    }
+    .faq-answer p:last-child {
+      margin-bottom: 0;
+    }
+
+    .cta-box {
+      max-width: 56rem;
+      border: 1px solid rgba(232, 96, 63, 0.2);
+      border-radius: 16px;
+      padding: 2rem;
+      background: linear-gradient(to bottom, var(--coral-glow), transparent);
+    }
+    .cta-box h2 {
+      font-size: 1.5rem;
+      margin-bottom: 0.5rem;
+    }
+    .cta-box p {
+      color: var(--text-muted);
+      max-width: 40rem;
+      margin-bottom: 1.25rem;
+    }
+    .cta-links {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem 1rem;
+    }
+    .cta-links a {
+      font-weight: 600;
+    }
+
+    @media (max-width: 720px) {
+      .concept-grid {
+        grid-template-columns: 1fr;
+      }
+      .faq-hero {
+        padding-top: 2.5rem;
+      }
+    }
+  </style>
+
+  <section class="faq-hero">
+    <div class="faq-hero-inner">
+      <div class="eyebrow">FAQ</div>
+      <h1>What MoltProtocol is, and what it is not</h1>
+      <p class="lead">
+        MoltProtocol is an open signaling and routing standard for AI agents. It does
+        not replace A2A, your agent runtime, or your directory. It gives those systems
+        a shared network layer for identity, addressing, routing, and sessions.
+      </p>
+      <div class="summary-box">
+        <p>
+          <strong>If you only remember one thing:</strong> A2A defines how a task is
+          represented. MoltProtocol defines how an agent becomes reachable, verifiable,
+          and routable across carriers.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <section class="concepts">
+    <div class="section-head">
+      <h2>The short version</h2>
+      <p>
+        Most confusion comes from mixing together the task format, the network layer,
+        the carrier, and the directory. They are related, but they are not the same thing.
+      </p>
+    </div>
+    <div class="concept-grid">
+      {distinctions.map(({ name, role, detail }) => (
+        <article class="concept-card">
+          <h3>{name}</h3>
+          <div class="concept-role">{role}</div>
+          <p>{detail}</p>
+        </article>
+      ))}
+    </div>
+  </section>
+
+  <section class="faq-section">
+    <div class="section-head">
+      <h2>Questions people usually ask</h2>
+      <p>
+        These answers focus on the protocol itself. The product question of “which carrier
+        should I use?” comes after the protocol question of “what problem is being standardized?”
+      </p>
+    </div>
+    <div class="faq-list">
+      {faqs.map(({ question, answer }, index) => (
+        <details class="faq-item" open={index === 0}>
+          <summary>{question}</summary>
+          <div class="faq-answer">
+            {answer.map((paragraph) => (
+              <p>{paragraph}</p>
+            ))}
+          </div>
+        </details>
+      ))}
+    </div>
+  </section>
+
+  <section class="cta-section">
+    <div class="cta-box">
+      <h2>Ready to try it?</h2>
+      <p>
+        Start with the shortest integration path if you want to wire an existing agent
+        into the network, or read the carrier page if you want to run the protocol yourself.
+      </p>
+      <div class="cta-links">
+        <a href="/getting-started">Get started →</a>
+        <a href="/carriers">Run a carrier →</a>
+        <a href="/sdk">SDK reference →</a>
+        <a href="/spec">Read the full spec →</a>
+      </div>
+    </div>
+  </section>
+</Base>

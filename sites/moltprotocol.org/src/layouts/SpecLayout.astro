@@ -1,0 +1,315 @@
+---
+import Base from './Base.astro';
+
+export interface TocEntry {
+  id: string;
+  text: string;
+  level: number;
+}
+
+export interface Props {
+  title: string;
+  activeNav: string;
+  specHtml: string;
+  toc: TocEntry[];
+}
+
+const { title, activeNav, specHtml, toc } = Astro.props;
+---
+
+<Base title={title} activeNav={activeNav}>
+  <style is:global>
+    /* ── Spec layout: sidebar + content ─────────────── */
+    .spec-layout {
+      max-width: 80rem;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2rem;
+    }
+
+    @media (min-width: 1024px) {
+      .spec-layout {
+        grid-template-columns: 15rem 1fr;
+        gap: 3rem;
+      }
+    }
+
+    /* ── Sidebar ToC ────────────────────────────────── */
+    .spec-toc {
+      display: none;
+    }
+
+    @media (min-width: 1024px) {
+      .spec-toc {
+        display: block;
+        position: sticky;
+        top: 4.5rem; /* below nav */
+        max-height: calc(100vh - 5rem);
+        overflow-y: auto;
+        padding-right: 0.5rem;
+        scrollbar-width: thin;
+        scrollbar-color: var(--border) transparent;
+      }
+      .spec-toc::-webkit-scrollbar { width: 4px; }
+      .spec-toc::-webkit-scrollbar-thumb { background: var(--border); border-radius: 2px; }
+      .spec-toc::-webkit-scrollbar-track { background: transparent; }
+    }
+
+    .toc-title {
+      font-size: 0.6875rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text-dim);
+      margin-bottom: 0.75rem;
+      padding-left: 0.75rem;
+    }
+
+    .toc-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .toc-link {
+      display: block;
+      padding: 0.25rem 0.75rem;
+      font-size: 0.8125rem;
+      line-height: 1.4;
+      color: var(--text-dim);
+      text-decoration: none;
+      border-left: 2px solid transparent;
+      transition: color 0.15s, border-color 0.15s;
+    }
+
+    .toc-link:hover {
+      color: var(--text-muted);
+    }
+
+    .toc-link.active {
+      color: var(--coral);
+      border-left-color: var(--coral);
+    }
+
+    .toc-link[data-level="3"] {
+      padding-left: 1.5rem;
+      font-size: 0.75rem;
+    }
+
+    /* ── Heading anchor links ───────────────────────── */
+    .heading-anchor {
+      display: inline-flex;
+      align-items: center;
+      margin-left: 0.5rem;
+      color: var(--text-dim);
+      opacity: 0;
+      transition: opacity 0.15s, color 0.15s;
+      text-decoration: none;
+      vertical-align: middle;
+    }
+
+    .heading-anchor svg {
+      width: 0.875em;
+      height: 0.875em;
+      fill: currentColor;
+    }
+
+    .heading-anchor:hover {
+      color: var(--coral);
+    }
+
+    /* Show on heading hover */
+    .prose h2:hover .heading-anchor,
+    .prose h3:hover .heading-anchor,
+    .prose h4:hover .heading-anchor {
+      opacity: 1;
+    }
+
+    /* Show when focused (keyboard accessibility) */
+    .heading-anchor:focus {
+      opacity: 1;
+      outline: 2px solid var(--coral);
+      outline-offset: 2px;
+      border-radius: 3px;
+    }
+
+    /* Copied tooltip */
+    .heading-anchor.copied::after {
+      content: 'Copied!';
+      position: absolute;
+      left: calc(100% + 0.5rem);
+      top: 50%;
+      transform: translateY(-50%);
+      background: var(--bg-raised);
+      color: var(--coral);
+      font-size: 0.6875rem;
+      font-weight: 600;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      border: 1px solid var(--border);
+      white-space: nowrap;
+      pointer-events: none;
+      animation: fade-out 1.5s ease forwards;
+    }
+
+    @keyframes fade-out {
+      0%, 70% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+
+    /* Offset scroll target for sticky nav */
+    .prose h2[id],
+    .prose h3[id],
+    .prose h4[id] {
+      scroll-margin-top: 5rem;
+    }
+
+    /* Position relative for tooltip */
+    .prose h2,
+    .prose h3,
+    .prose h4 {
+      position: relative;
+    }
+
+    /* ── Cross-spec divider ─────────────────────────── */
+    .spec-boundary {
+      margin: 1rem 0 2rem;
+      padding: 1rem 1.125rem;
+      border: 1px solid rgba(232, 96, 63, 0.24);
+      border-radius: 14px;
+      background:
+        radial-gradient(circle at top right, rgba(59, 130, 246, 0.1), transparent 35%),
+        linear-gradient(to bottom, rgba(232, 96, 63, 0.08), rgba(17, 24, 39, 0.92));
+      box-shadow:
+        0 16px 48px rgba(0, 0, 0, 0.18),
+        inset 0 1px 0 rgba(255, 255, 255, 0.03);
+    }
+
+    .spec-boundary-eyebrow {
+      margin-bottom: 0.5rem;
+      color: var(--coral);
+      font-size: 0.6875rem;
+      font-weight: 700;
+      letter-spacing: 0.14em;
+      text-transform: uppercase;
+    }
+
+    .spec-boundary p {
+      margin: 0;
+      color: var(--text-muted);
+      line-height: 1.7;
+    }
+
+    .spec-boundary strong {
+      color: var(--text);
+    }
+  </style>
+
+  <div class="spec-layout">
+    <!-- Sidebar ToC -->
+    <aside class="spec-toc">
+      <div class="toc-title">On this page</div>
+      <ul class="toc-list">
+        {toc.map(({ id, text, level }) => (
+          <li>
+            <a href={`#${id}`} class="toc-link" data-level={level} data-toc-id={id}>
+              {text}
+            </a>
+          </li>
+        ))}
+      </ul>
+    </aside>
+
+    <!-- Spec content -->
+    <main>
+      <div class="prose" set:html={specHtml} />
+    </main>
+  </div>
+
+  <!-- Scroll spy + anchor copy script -->
+  <script>
+    function initSpecPage() {
+      // ── Scroll spy ──────────────────────────────────
+      const tocLinks = document.querySelectorAll<HTMLAnchorElement>('.toc-link');
+      const headings: { id: string; el: HTMLElement }[] = [];
+
+      tocLinks.forEach(link => {
+        const id = link.dataset.tocId;
+        if (id) {
+          const el = document.getElementById(id);
+          if (el) headings.push({ id, el });
+        }
+      });
+
+      function updateActiveLink() {
+        let activeId = '';
+        const scrollTop = window.scrollY + 100; // offset for sticky nav
+
+        for (let i = headings.length - 1; i >= 0; i--) {
+          if (headings[i].el.offsetTop <= scrollTop) {
+            activeId = headings[i].id;
+            break;
+          }
+        }
+
+        tocLinks.forEach(link => {
+          if (link.dataset.tocId === activeId) {
+            link.classList.add('active');
+          } else {
+            link.classList.remove('active');
+          }
+        });
+
+        // Scroll active toc link into view within sidebar
+        const activeLink = document.querySelector('.toc-link.active');
+        if (activeLink) {
+          const sidebar = document.querySelector('.spec-toc');
+          if (sidebar) {
+            const linkRect = activeLink.getBoundingClientRect();
+            const sidebarRect = sidebar.getBoundingClientRect();
+            if (linkRect.top < sidebarRect.top || linkRect.bottom > sidebarRect.bottom) {
+              activeLink.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+            }
+          }
+        }
+      }
+
+      let ticking = false;
+      window.addEventListener('scroll', () => {
+        if (!ticking) {
+          requestAnimationFrame(() => {
+            updateActiveLink();
+            ticking = false;
+          });
+          ticking = true;
+        }
+      });
+
+      updateActiveLink();
+
+      // ── Anchor link copy ────────────────────────────
+      document.querySelectorAll<HTMLAnchorElement>('.heading-anchor').forEach(anchor => {
+        anchor.addEventListener('click', async (e) => {
+          e.preventDefault();
+          const href = anchor.getAttribute('href');
+          if (!href) return;
+
+          const url = window.location.origin + window.location.pathname + href;
+          try {
+            await navigator.clipboard.writeText(url);
+            anchor.classList.add('copied');
+            setTimeout(() => anchor.classList.remove('copied'), 1500);
+          } catch {
+            // Fallback: update the URL hash
+            window.location.hash = href;
+          }
+        });
+      });
+    }
+
+    // Run on page load
+    initSpecPage();
+  </script>
+</Base>

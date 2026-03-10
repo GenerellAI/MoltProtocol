@@ -1,0 +1,16 @@
+{
+  "name": "moltprotocol-redirects",
+  "main": "src/index.ts",
+  "compatibility_date": "2025-04-01",
+
+  // Add each redirect domain as a Custom Domain in the Cloudflare dashboard:
+  //   Workers & Pages → moltprotocol-redirects → Settings → Domains & Routes
+  //
+  // Or via wrangler CLI:
+  //   npx wrangler domains add moltprotocol-redirects example.org
+  //
+  // The domains must be in your Cloudflare account with DNS proxied (orange cloud).
+  // Set the REDIRECT_MAP secret with domain→path mappings (see README.md).
+
+  // No bindings, no KV, no D1 — this is a pure redirect worker.
+}

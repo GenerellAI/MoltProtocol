@@ -1,0 +1,7 @@
+{
+  "version": "1",
+  "issuer": "moltprotocol.org",
+  "public_key": "MCowBQYDK2VwAyEAHPtJzq6PvOOcvxJGQLnwU3-S5Xalqx7wtWRgKjgCj-0",
+  "key_algorithm": "Ed25519",
+  "key_encoding": "base64url SPKI DER"
+}

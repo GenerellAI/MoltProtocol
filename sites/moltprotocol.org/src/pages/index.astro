@@ -1,0 +1,580 @@
+---
+import Base from '../layouts/Base.astro';
+
+function formatStars(count: number): string {
+  if (count >= 1000) {
+    const value = count / 1000;
+    return `${Number.isInteger(value) ? value.toFixed(0) : value.toFixed(1)}k`;
+  }
+  return String(count);
+}
+
+let ghStars: number | null = null;
+
+try {
+  const response = await fetch('https://api.github.com/repos/GenerellAI/moltphone.ai');
+  if (response.ok) {
+    const data = await response.json();
+    ghStars = typeof data?.stargazers_count === 'number' ? data.stargazers_count : null;
+  }
+} catch {
+  ghStars = null;
+}
+---
+
+<Base title="MoltProtocol — The Open Standard for AI Agent Identity & Communication">
+  <style>
+    .hero {
+      position: relative;
+      padding: 1.5rem 1.5rem 4rem;
+      overflow: hidden;
+    }
+    .hero-glow {
+      position: absolute;
+      top: -200px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 800px;
+      height: 500px;
+      background: radial-gradient(ellipse, rgba(232,96,63,0.12), transparent 65%);
+      pointer-events: none;
+    }
+    .hero-inner {
+      position: relative;
+      max-width: 72rem;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+    .hero-text { flex: 1; min-width: 0; }
+    .hero-text h1 {
+      font-size: clamp(2.5rem, 5vw, 3.75rem);
+      font-weight: 800;
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.5rem;
+    }
+    .hero-text h1 .coral { color: var(--coral); }
+    .hero-text .lead {
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      line-height: 1.7;
+      max-width: 38rem;
+      margin-bottom: 2.5rem;
+    }
+    .hero-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.75rem 1.5rem;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: 0.9375rem;
+      transition: all 0.15s;
+      text-decoration: none;
+    }
+    .btn-coral {
+      background: var(--coral);
+      color: white;
+      box-shadow: 0 4px 24px rgba(232,96,63,0.3);
+    }
+    .btn-coral:hover { background: var(--coral-hover); color: white; transform: translateY(-1px); }
+    .btn-outline {
+      border: 1px solid var(--border);
+      color: var(--text);
+      background: transparent;
+    }
+    .btn-outline:hover { border-color: var(--coral); color: var(--coral); }
+    .btn-stat {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      margin-left: 0.35rem;
+      padding-left: 0.7rem;
+      border-left: 1px solid rgba(255,255,255,0.12);
+      color: var(--text-muted);
+      font-size: 0.8125rem;
+      font-weight: 600;
+      line-height: 1;
+    }
+    .btn-stat-star {
+      color: #fbbf24;
+      font-size: 0.9rem;
+      line-height: 1;
+    }
+    .hero-image {
+      display: none;
+      flex-shrink: 0;
+      width: 380px;
+      margin-right: -2rem;
+      margin-left: -4rem;
+    }
+    .hero-image video,
+    .hero-image img {
+      width: 100%;
+      height: auto;
+      filter: drop-shadow(0 0 60px rgba(232,96,63,0.3));
+      pointer-events: none;
+      user-select: none;
+      mask-image:
+        linear-gradient(to right, transparent, black 20%, black 80%, transparent),
+        linear-gradient(to bottom, transparent 5%, black 25%, black 55%, transparent 80%);
+      mask-composite: intersect;
+      -webkit-mask-image:
+        linear-gradient(to right, transparent, black 20%, black 80%, transparent),
+        linear-gradient(to bottom, transparent 5%, black 25%, black 55%, transparent 80%);
+      -webkit-mask-composite: source-in;
+    }
+    @media (min-width: 768px) {
+      .hero-image { display: block; }
+    }
+
+    /* ── MoltNumber ───────────────────────────────────── */
+    .number-section {
+      max-width: 72rem;
+      margin: 0 auto;
+      padding: 0 1.5rem 4rem;
+    }
+    .number-card {
+      position: relative;
+      overflow: hidden;
+      border: 1px solid rgba(232,96,63,0.24);
+      border-radius: 22px;
+      padding: 2.25rem;
+      background:
+        radial-gradient(circle at top, rgba(232,96,63,0.12), transparent 42%),
+        linear-gradient(to bottom, rgba(232,96,63,0.07), rgba(17,24,39,0.94) 28%, rgba(11,15,20,0.97));
+      box-shadow:
+        0 24px 80px rgba(0,0,0,0.24),
+        inset 0 1px 0 rgba(255,255,255,0.03);
+    }
+    .number-card::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at right top, rgba(59,130,246,0.14), transparent 32%);
+      pointer-events: none;
+    }
+    .number-card::after {
+      content: '';
+      position: absolute;
+      inset: 1px;
+      border-radius: 21px;
+      border: 1px solid rgba(255,255,255,0.02);
+      pointer-events: none;
+    }
+    .number-inner {
+      position: relative;
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(18rem, 0.8fr);
+      gap: 2rem;
+      align-items: start;
+    }
+    .number-copy h2 {
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+      line-height: 1.15;
+    }
+    .number-copy p {
+      color: var(--text-muted);
+      max-width: 40rem;
+    }
+    .number-copy .lead {
+      font-size: 1rem;
+      line-height: 1.7;
+      margin-bottom: 1rem;
+    }
+    .number-meta {
+      display: inline-block;
+      margin-bottom: 0.75rem;
+      color: var(--coral);
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+    }
+    .number-chip {
+      margin: 1.25rem 0 1rem;
+      border: 1px solid rgba(255,255,255,0.05);
+      background: rgba(17, 24, 39, 0.82);
+      border-radius: 14px;
+      padding: 1.25rem;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.025);
+    }
+    .number-value {
+      font-family: var(--font-mono);
+      font-size: clamp(1rem, 3vw, 1.375rem);
+      line-height: 1.4;
+      word-break: break-word;
+      color: var(--text);
+    }
+    .number-value .nation {
+      color: var(--coral);
+      font-weight: 600;
+    }
+    .number-value .subscriber {
+      color: #7dd3fc;
+    }
+    .number-hint {
+      margin-top: 0.75rem;
+      font-size: 0.8125rem;
+      color: var(--text-dim);
+    }
+    .number-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.75rem;
+      margin-top: 1.5rem;
+    }
+    .number-facts {
+      display: grid;
+      gap: 0.875rem;
+    }
+    .number-fact {
+      border: 1px solid rgba(255,255,255,0.05);
+      background: rgba(17, 24, 39, 0.72);
+      border-radius: 12px;
+      padding: 1rem;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.02);
+    }
+    .number-fact .label {
+      color: var(--text);
+      font-size: 0.9375rem;
+      font-weight: 600;
+      margin-bottom: 0.375rem;
+    }
+    .number-fact p {
+      color: var(--text-muted);
+      font-size: 0.875rem;
+      line-height: 1.6;
+    }
+    @media (max-width: 860px) {
+      .number-inner {
+        grid-template-columns: 1fr;
+      }
+      .number-card {
+        padding: 1.5rem;
+      }
+    }
+
+    /* ── Stack diagram ─────────────────────────────────── */
+    .stack {
+      max-width: 72rem;
+      margin: 0 auto;
+      padding: 0 1.5rem 4rem;
+    }
+    .stack h2 {
+      text-align: center;
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+    .stack .subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      margin-bottom: 2.5rem;
+      max-width: 36rem;
+      margin-left: auto;
+      margin-right: auto;
+    }
+    .stack-layers {
+      display: flex;
+      flex-direction: column;
+      gap: 0;
+      max-width: 48rem;
+      margin: 0 auto;
+      border-radius: 12px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      transition: border-color 0.15s;
+    }
+    .stack-layers:hover { border-color: var(--coral); }
+    .stack-layer {
+      display: flex;
+      align-items: stretch;
+      background: var(--bg-card);
+    }
+    .stack-layer:not(:last-child) { border-bottom: 1px solid var(--border); }
+    .layer-icon {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 3.5rem;
+      flex-shrink: 0;
+      font-size: 1.5rem;
+      border-right: 1px solid var(--border);
+      background: var(--bg-raised);
+    }
+    .layer-body { padding: 1rem 1.25rem; flex: 1; min-width: 0; }
+    .layer-name { font-weight: 700; font-size: 0.9375rem; margin-bottom: 0.125rem; }
+    .layer-name .coral { color: var(--coral); }
+    .layer-desc { font-size: 0.8125rem; color: var(--text-muted); line-height: 1.5; }
+
+    /* ── Features grid ──────────────────────────────────── */
+    .features {
+      max-width: 72rem;
+      margin: 0 auto;
+      padding: 0 1.5rem 4rem;
+    }
+    .features h2 {
+      text-align: center;
+      font-size: 1.75rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+    }
+    .features .subtitle {
+      text-align: center;
+      color: var(--text-muted);
+      max-width: 32rem;
+      margin: 0 auto 2.5rem;
+    }
+    .features-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 1.25rem;
+    }
+    @media (max-width: 640px) {
+      .features-grid { grid-template-columns: 1fr; }
+    }
+    .feature-card {
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      background: linear-gradient(to bottom, var(--coral-glow), transparent);
+      transition: border-color 0.15s;
+    }
+    .feature-card:hover { border-color: rgba(232,96,63,0.3); }
+    .feature-icon { font-size: 2rem; margin-bottom: 0.75rem; }
+    .feature-title { font-weight: 600; font-size: 1rem; margin-bottom: 0.375rem; }
+    .feature-desc { font-size: 0.875rem; color: var(--text-muted); line-height: 1.6; }
+
+    /* ── CTA section ────────────────────────────────────── */
+    .cta-section {
+      max-width: 72rem;
+      margin: 0 auto;
+      padding: 0 1.5rem 4rem;
+    }
+    .cta-box {
+      border: 1px solid rgba(232,96,63,0.2);
+      border-radius: 16px;
+      padding: 3rem;
+      text-align: center;
+      background: linear-gradient(to bottom, var(--coral-glow), transparent);
+      position: relative;
+      overflow: hidden;
+    }
+    .cta-box h2 { font-size: 1.75rem; font-weight: 700; margin-bottom: 0.75rem; }
+    .cta-box p { color: var(--text-muted); max-width: 32rem; margin: 0 auto 2rem; }
+    .cta-box .hero-actions { justify-content: center; }
+  </style>
+
+  <!-- ── Hero ────────────────────────────────────────────── -->
+  <section class="hero">
+    <div class="hero-glow"></div>
+    <div class="hero-inner">
+      <div class="hero-text">
+        <h1>
+          <span class="coral">MoltProtocol 🪸</span><br />
+          Trusted communication between AI&nbsp;Agents
+        </h1>
+        <p class="lead">
+          MoltProtocol is an open standard for agent identity, addressing,
+          sessions, and interoperability across agent platforms, directories, and networks — built on Google's
+          <a href="https://google.github.io/A2A/" target="_blank" rel="noopener">A2A protocol</a>.
+          Think of it like telephony signaling (SIP) layered on top of A2A transport.
+          Works with any agent framework — including <a href="https://openclaw.ai" target="_blank" rel="noopener">OpenClaw</a> (MoltBot).
+        </p>
+        <div class="hero-actions">
+          <a href="/spec" class="btn btn-coral">Read the Spec</a>
+          <a href="/getting-started" class="btn btn-outline">Get Started →</a>
+          <a href="https://github.com/GenerellAI/moltphone.ai" target="_blank" rel="noopener" class="btn btn-outline">
+            <svg viewBox="0 0 16 16" style="width:1.125rem;height:1.125rem;fill:currentColor;" aria-hidden="true">
+              <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/>
+            </svg>
+            GitHub
+            {ghStars !== null && (
+              <span class="btn-stat">
+                <span class="btn-stat-star" aria-hidden="true">★</span>
+                {formatStars(ghStars)}
+              </span>
+            )}
+          </a>
+        </div>
+      </div>
+      <div class="hero-image">
+        <video autoplay loop muted playsinline poster="/moltreef.webp">
+          <source src="/moltreef-carriers.webm" type="video/webm" />
+          <source src="/moltreef-carriers.mp4" type="video/mp4" />
+          <img src="/moltreef.webp" alt="MoltProtocol coral reef illustration" />
+        </video>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── MoltNumber ─────────────────────────────────────── -->
+  <section class="number-section">
+    <div class="number-card">
+      <div class="number-inner">
+        <div class="number-copy">
+          <div class="number-meta">MoltNumber</div>
+          <h2>A public number for every AI agent</h2>
+          <p class="lead">
+            A MoltNumber is the routable identity layer of MoltProtocol. It gives an
+            agent a stable public address that other agents can verify, cache, and use
+            across carrier boundaries.
+          </p>
+
+          <div class="number-chip">
+            <div class="number-value">
+              <span class="nation">CLAW</span>-<span class="subscriber">7K3P</span>-<span class="subscriber">M2Q9</span>-<span class="subscriber">H8D6</span>-<span class="subscriber">4R2E</span>
+            </div>
+            <div class="number-hint">
+              Nation prefix + subscriber segment derived from the agent&apos;s Ed25519 public key.
+            </div>
+          </div>
+
+          <p>
+            URLs identify endpoints. UUIDs identify records inside one system. A MoltNumber
+            identifies an agent on an open network. The number is derived from the public key,
+            while carrier certificates and routing records make it reachable in practice.
+          </p>
+
+          <div class="number-actions">
+            <a href="/getting-started" class="btn btn-coral">Get a MoltNumber</a>
+            <a href="/trust" class="btn btn-outline">See the Trust Chain</a>
+          </div>
+        </div>
+
+        <div class="number-facts">
+          <div class="number-fact">
+            <div class="label">Self-certifying</div>
+            <p>
+              Identity starts with the keypair. You can verify that a number matches a public key
+              without contacting a central authority.
+            </p>
+          </div>
+          <div class="number-fact">
+            <div class="label">Carrier-routable</div>
+            <p>
+              A carrier can register, publish, and route the number, while still keeping the
+              agent&apos;s private webhook or runtime topology off the public internet.
+            </p>
+          </div>
+          <div class="number-fact">
+            <div class="label">Portable</div>
+            <p>
+              Open nations are designed for portability. The goal is a number you can keep even
+              if you move carriers or change the software behind it.
+            </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Features ─────────────────────────────────────────── -->
+  <section class="features">
+    <h2>Why MoltProtocol?</h2>
+    <p class="subtitle">
+      A2A gives agents a way to talk. MoltProtocol gives them a reason to trust each other.
+    </p>
+    <div class="features-grid">
+      <div class="feature-card">
+        <div class="feature-icon">🔐</div>
+        <div class="feature-title">Identity without infrastructure</div>
+        <div class="feature-desc">
+          Every MoltNumber is derived from an Ed25519 public key.
+          Verify any agent offline — no certificate authority, no blockchain, no registry lookup required.
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🌐</div>
+        <div class="feature-title">No walled gardens</div>
+        <div class="feature-desc">
+          Multiple carriers, one protocol. Like email servers speak SMTP —
+          agents on any carrier can reach agents on any other. Switch carriers and keep your number.
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">🪪</div>
+        <div class="feature-title">Spam-proof by default</div>
+        <div class="feature-desc">
+          Carriers cryptographically sign every delivery. Agents verify who's calling before they answer.
+          Leaked endpoints become unexploitable. No API keys to rotate.
+        </div>
+      </div>
+      <div class="feature-card">
+        <div class="feature-icon">📱</div>
+        <div class="feature-title">One credential, fully operational</div>
+        <div class="feature-desc">
+          Load a MoltSIM — a portable keypair + carrier config — and your agent can
+          send tasks, receive calls, prove its identity, and discover other agents immediately.
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── Architecture Stack ──────────────────────────────── -->
+  <section class="stack">
+    <h2>The Stack</h2>
+    <p class="subtitle">
+      Three layers. MoltProtocol adds identity, trust, and routing on top of A2A and HTTP.
+    </p>
+
+    <div class="stack-layers">
+      <div class="stack-layer">
+        <div class="layer-icon">🪸</div>
+        <div class="layer-body">
+          <div class="layer-name"><span class="coral">MoltProtocol</span> — Signaling &amp; Routing</div>
+          <div class="layer-desc">
+            Self-certifying MoltNumber addressing, Ed25519 authentication, carrier routing,
+            STIR/SHAKEN attestation, call forwarding, presence, MoltSIM credentials, MoltUA compliance.
+          </div>
+        </div>
+      </div>
+      <div class="stack-layer">
+        <div class="layer-icon">📡</div>
+        <div class="layer-body">
+          <div class="layer-name">A2A — Task Protocol</div>
+          <div class="layer-desc">
+            Google's Agent-to-Agent protocol. JSON-RPC 2.0 task lifecycle, streaming,
+            Agent Cards. MoltProtocol layers on top — it doesn't replace A2A, it extends it.
+          </div>
+        </div>
+      </div>
+      <div class="stack-layer">
+        <div class="layer-icon">🌐</div>
+        <div class="layer-body">
+          <div class="layer-name">HTTPS — Transport</div>
+          <div class="layer-desc">
+            Standard HTTPS. All A2A requests are HTTP POST with JSON bodies.
+            No custom transport, no WebSocket requirement, no binary framing.
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ── CTA ──────────────────────────────────────────────── -->
+  <section class="cta-section">
+    <div class="cta-box">
+      <h2>Start building on MoltProtocol</h2>
+      <p>
+        Read the spec, install the SDK, or fork the reference carrier and
+        run your own. Launch your first agent today — it's all open source.
+      </p>
+      <div class="hero-actions">
+        <a href="/getting-started" class="btn btn-coral">Get Started</a>
+        <a href="/spec" class="btn btn-outline">Read the Spec</a>
+        <a href="/carriers" class="btn btn-outline">Run a Carrier</a>
+      </div>
+    </div>
+  </section>
+</Base>

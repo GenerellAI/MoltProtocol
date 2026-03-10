@@ -1,0 +1,331 @@
+---
+export interface Props {
+  title: string;
+  description?: string;
+  activeNav?: string;
+}
+
+const {
+  title,
+  description = 'An open carrier protocol for AI agent identity, addressing, sessions, and cross-carrier interoperability — built on A2A.',
+  activeNav,
+} = Astro.props;
+
+const nav = [
+  { href: '/', label: '🪸 MoltProtocol' },
+  { href: '/getting-started', label: 'Get Started' },
+  { href: '/faq', label: 'FAQ' },
+];
+
+const refNav = [
+  { href: '/spec', label: 'Full Specification' },
+  { href: '/sdk', label: 'SDK' },
+  { href: '/agent-cards', label: 'Agent Cards' },
+  { href: '/trust', label: 'Trust Chain' },
+  { href: '/carriers', label: 'Run a Carrier' },
+];
+---
+
+<!doctype html>
+<html lang="en" class="dark">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content={description} />
+    <title>{title}</title>
+    <link rel="icon" type="image/x-icon" href="/favicon.ico" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/themes/prism-tomorrow.min.css" rel="stylesheet" />
+    <style is:global>
+      /* ── Reset & Base ─────────────────────────────────── */
+      *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+      :root {
+        --coral: #e8603f;
+        --coral-hover: #d4523a;
+        --coral-faint: rgba(232, 96, 63, 0.12);
+        --coral-glow: rgba(232, 96, 63, 0.06);
+        --bg: #0B0F14;
+        --bg-card: #111827;
+        --bg-raised: #1A2332;
+        --border: #1F2937;
+        --border-active: #e8603f;
+        --text: #EAF2FF;
+        --text-muted: #9CA3AF;
+        --text-dim: #6B7280;
+        --font-sans: 'Manrope', system-ui, -apple-system, sans-serif;
+        --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+      }
+
+      html { scroll-behavior: smooth; }
+      body {
+        font-family: var(--font-sans);
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.7;
+        -webkit-font-smoothing: antialiased;
+        overflow-x: hidden;
+      }
+
+      a { color: var(--coral); text-decoration: none; transition: color 0.15s; }
+      a:hover { color: var(--coral-hover); }
+
+      code, pre { font-family: var(--font-mono); }
+      code {
+        background: var(--bg-raised);
+        padding: 0.15em 0.4em;
+        border-radius: 4px;
+        font-size: 0.875em;
+      }
+      pre {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1.25rem 1.5rem;
+        overflow-x: auto;
+        font-size: 0.875rem;
+        line-height: 1.6;
+      }
+      pre code {
+        background: none;
+        padding: 0;
+        font-size: inherit;
+      }
+
+      /* Override Prism tomorrow theme to match our dark palette */
+      code[class*="language-"],
+      pre[class*="language-"] {
+        font-family: var(--font-mono);
+        font-size: 0.875rem;
+        line-height: 1.6;
+        text-shadow: none;
+      }
+      pre[class*="language-"] {
+        background: var(--bg-card);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1.25rem 1.5rem;
+      }
+      :not(pre) > code[class*="language-"] {
+        background: var(--bg-raised);
+        padding: 0.15em 0.4em;
+        border-radius: 4px;
+      }
+
+      /* ── Nav ──────────────────────────────────────────── */
+      .site-nav {
+        position: sticky;
+        top: 0;
+        z-index: 50;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        background: rgba(11, 15, 20, 0.85);
+        border-bottom: 1px solid var(--border);
+      }
+      .nav-inner {
+        max-width: 72rem;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        height: 3.5rem;
+      }
+      .nav-link {
+        padding: 0.375rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        white-space: nowrap;
+        transition: color 0.15s, background 0.15s;
+      }
+      .nav-link:hover { color: var(--text); background: var(--coral-faint); }
+      .nav-link.active { color: var(--coral); background: var(--coral-faint); }
+      .nav-brand {
+        font-size: 1rem;
+        font-weight: 700;
+        color: var(--text);
+        margin-right: 1rem;
+        white-space: nowrap;
+      }
+      .nav-brand:hover { color: var(--coral); }
+
+      .nav-dropdown {
+        position: relative;
+      }
+      .nav-dropdown-toggle {
+        padding: 0.375rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        white-space: nowrap;
+        transition: color 0.15s, background 0.15s;
+        cursor: default;
+        user-select: none;
+      }
+      .nav-dropdown:hover .nav-dropdown-toggle,
+      .nav-dropdown-toggle.has-active { color: var(--text); background: var(--coral-faint); }
+      .nav-dropdown-toggle.has-active { color: var(--coral); }
+      .nav-dropdown-menu {
+        display: none;
+        position: absolute;
+        top: 100%;
+        left: 0;
+        margin-top: 0.25rem;
+        background: rgba(11, 15, 20, 0.95);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 0.375rem;
+        min-width: 10rem;
+        z-index: 100;
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+      }
+      .nav-dropdown:hover .nav-dropdown-menu { display: block; }
+      .nav-dropdown-menu a {
+        display: block;
+        padding: 0.375rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        white-space: nowrap;
+        transition: color 0.15s, background 0.15s;
+      }
+      .nav-dropdown-menu a:hover { color: var(--text); background: var(--coral-faint); }
+      .nav-dropdown-menu a.active { color: var(--coral); background: var(--coral-faint); }
+
+      .nav-gh {
+        margin-left: auto;
+        padding: 0.375rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        font-weight: 500;
+        color: var(--text-muted);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        white-space: nowrap;
+      }
+      .nav-gh:hover { color: var(--text); background: var(--coral-faint); }
+      .nav-gh svg { width: 1.125rem; height: 1.125rem; fill: currentColor; }
+
+      /* ── Layout ───────────────────────────────────────── */
+      .page-container {
+        max-width: 72rem;
+        margin: 0 auto;
+        padding: 0 1.5rem;
+      }
+
+      /* ── Prose (spec pages) ───────────────────────────── */
+      .prose { max-width: 52rem; }
+      .prose h1 { font-size: 2.25rem; font-weight: 800; margin-bottom: 1rem; line-height: 1.2; }
+      .prose h2 { font-size: 1.5rem; font-weight: 700; margin-top: 3rem; margin-bottom: 0.75rem; padding-bottom: 0.5rem; border-bottom: 1px solid var(--border); }
+      .prose h3 { font-size: 1.25rem; font-weight: 600; margin-top: 2rem; margin-bottom: 0.5rem; }
+      .prose h4 { font-size: 1.1rem; font-weight: 600; margin-top: 1.5rem; margin-bottom: 0.5rem; }
+      .prose p { margin-bottom: 1rem; color: var(--text-muted); }
+      .prose ul, .prose ol { margin-bottom: 1rem; padding-left: 1.5rem; color: var(--text-muted); }
+      .prose li { margin-bottom: 0.25rem; }
+      .prose li::marker { color: var(--coral); }
+      .prose blockquote {
+        border-left: 3px solid var(--coral);
+        padding: 0.75rem 1rem;
+        margin: 1.5rem 0;
+        background: var(--coral-glow);
+        border-radius: 0 8px 8px 0;
+      }
+      .prose blockquote p { color: var(--text-muted); margin-bottom: 0; }
+      .prose table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 1.5rem 0;
+        font-size: 0.875rem;
+      }
+      .prose th {
+        text-align: left;
+        padding: 0.625rem 1rem;
+        border-bottom: 2px solid var(--border);
+        font-weight: 600;
+        color: var(--text);
+      }
+      .prose td {
+        padding: 0.5rem 1rem;
+        border-bottom: 1px solid var(--border);
+        color: var(--text-muted);
+      }
+      .prose hr { border: none; border-top: 1px solid var(--border); margin: 2.5rem 0; }
+      .prose strong { color: var(--text); font-weight: 600; }
+      .prose a { text-decoration: underline; text-underline-offset: 2px; }
+
+      /* ── Footer ────────────────────────────────────────── */
+      .site-footer {
+        border-top: 1px solid var(--border);
+        margin-top: 6rem;
+        padding: 2rem 0;
+        text-align: center;
+        color: var(--text-dim);
+        font-size: 0.8125rem;
+      }
+
+      /* ── Utilities ─────────────────────────────────────── */
+      .coral { color: var(--coral); }
+      .bg-coral { background: var(--coral); }
+      .glow-coral { filter: drop-shadow(0 0 60px rgba(232, 96, 63, 0.3)); }
+    </style>
+  </head>
+  <body>
+    <nav class="site-nav">
+      <div class="nav-inner">
+        {nav.map(({ href, label }) =>
+          href === '/' ? (
+            <a href={href} class="nav-brand">{label}</a>
+          ) : (
+            <a href={href} class:list={['nav-link', { active: activeNav === href }]}>{label}</a>
+          )
+        )}
+        <div class="nav-dropdown">
+          <span class:list={['nav-dropdown-toggle', { 'has-active': refNav.some(r => activeNav === r.href) }]}>
+            Deep Dive ▾
+          </span>
+          <div class="nav-dropdown-menu">
+            {refNav.map(({ href, label }) => (
+              <a href={href} class:list={[{ active: activeNav === href }]}>{label}</a>
+            ))}
+          </div>
+        </div>
+        <a
+          href="https://github.com/GenerellAI/moltphone.ai"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="nav-gh"
+        >
+          <svg viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z" />
+          </svg>
+          GitHub
+        </a>
+      </div>
+    </nav>
+
+    <slot />
+
+    <footer class="site-footer">
+      <div class="page-container">
+        🪸 MoltProtocol is an open standard by <a href="https://github.com/GenerellAI">GenerellAI</a>.
+        Licensed under MIT.
+      </div>
+    </footer>
+
+    <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/prism.min.js"></script>
+    <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-typescript.min.js"></script>
+    <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-bash.min.js"></script>
+    <script is:inline src="https://cdnjs.cloudflare.com/ajax/libs/prism/1.29.0/components/prism-json.min.js"></script>
+  </body>
+</html>
