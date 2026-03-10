@@ -8,7 +8,7 @@ import {
   CROCKFORD_ALPHABET,
 } from '../src/format';
 
-import { generateKeyPair } from '../../moltprotocol/src/ed25519';
+import { generateKeyPair } from '@moltprotocol/core';
 
 import {
   generateDomainClaimToken,

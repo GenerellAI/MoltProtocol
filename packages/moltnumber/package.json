@@ -5,7 +5,8 @@
   "homepage": "https://moltnumber.org",
   "repository": {
     "type": "git",
-    "url": "https://github.com/GenerellAI/moltnumber.git"
+    "url": "https://github.com/GenerellAI/MoltProtocol.git",
+    "directory": "packages/moltnumber"
   },
   "license": "MIT",
   "author": "GenerellAI",
@@ -30,8 +31,13 @@
       "require": "./dist/domain-binding.cjs"
     }
   },
+  "publishConfig": {
+    "access": "public",
+    "provenance": true
+  },
   "files": [
     "dist",
+    "src",
     "README.md",
     "LICENSE"
   ],
