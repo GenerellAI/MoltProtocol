@@ -2,7 +2,7 @@
   "name": "moltprotocol",
   "version": "0.1.0",
   "private": true,
-  "description": "MoltProtocol — the open telephony standard for AI agent networks.",
+  "description": "MoltProtocol — self-certifying agent identity and cross-platform interop for AI agent networks.",
   "repository": {
     "type": "git",
     "url": "https://github.com/GenerellAI/MoltProtocol.git"
