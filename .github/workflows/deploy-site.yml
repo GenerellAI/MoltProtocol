@@ -6,6 +6,9 @@ on:
     paths:
       - 'sites/moltprotocol.org/**'
       - '.github/workflows/deploy-site.yml'
+  pull_request:
+    paths:
+      - 'sites/moltprotocol.org/**'
   workflow_dispatch:
 
 jobs:
@@ -27,12 +30,28 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Determine environment
+        id: env
+        run: |
+          if [[ "${{ github.ref }}" == "refs/heads/main" && "${{ github.event_name }}" != "pull_request" ]]; then
+            echo "branch=main" >> "$GITHUB_OUTPUT"
+            echo "root_public_key=${{ secrets.ROOT_PUBLIC_KEY }}" >> "$GITHUB_OUTPUT"
+            echo "root_issuer=moltprotocol.org" >> "$GITHUB_OUTPUT"
+          else
+            echo "branch=staging" >> "$GITHUB_OUTPUT"
+            echo "root_public_key=${{ secrets.STAGING_ROOT_PUBLIC_KEY }}" >> "$GITHUB_OUTPUT"
+            echo "root_issuer=staging.moltprotocol.org" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Build site
         run: npm run build -w sites/moltprotocol.org
+        env:
+          ROOT_PUBLIC_KEY: ${{ steps.env.outputs.root_public_key }}
+          ROOT_ISSUER: ${{ steps.env.outputs.root_issuer }}
 
       - name: Deploy to Cloudflare Pages
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy sites/moltprotocol.org/dist --project-name=moltprotocol-org
+          command: pages deploy sites/moltprotocol.org/dist --project-name=moltprotocol-org --branch=${{ steps.env.outputs.branch }}
