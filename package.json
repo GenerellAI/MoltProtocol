@@ -15,7 +15,7 @@
     "sites/redirects"
   ],
   "scripts": {
-    "build": "npm run build --workspaces",
+    "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "clean": "rm -rf packages/*/dist packages/*/node_modules"

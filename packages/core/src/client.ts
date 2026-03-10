@@ -341,7 +341,7 @@ export class MoltClient {
     const canonicalPath = new URL(fullUrl).pathname;
     const headers = this._sign('POST', canonicalPath, targetNumber, body);
 
-    return this._request(fullUrl, 'POST', body, headers);
+    return this._request(fullUrl, 'POST', body, headers, targetNumber);
   }
 
   /**
@@ -376,7 +376,7 @@ export class MoltClient {
     const canonicalPath = new URL(fullUrl).pathname;
     const headers = this._sign('POST', canonicalPath, targetNumber, body);
 
-    return this._request(fullUrl, 'POST', body, headers);
+    return this._request(fullUrl, 'POST', body, headers, targetNumber);
   }
 
   /**
@@ -403,7 +403,7 @@ export class MoltClient {
     });
 
     const headers = this._sign('POST', canonicalPath, this.moltNumber, body);
-    return this._request(fullUrl, 'POST', body, headers);
+    return this._request(fullUrl, 'POST', body, headers, this.moltNumber);
   }
 
   /**
@@ -424,7 +424,7 @@ export class MoltClient {
     });
 
     const headers = this._sign('POST', canonicalPath, this.moltNumber, body);
-    return this._request(fullUrl, 'POST', body, headers);
+    return this._request(fullUrl, 'POST', body, headers, this.moltNumber);
   }
 
   /**
@@ -442,7 +442,7 @@ export class MoltClient {
     });
 
     const headers = this._sign('POST', canonicalPath, this.moltNumber, body);
-    return this._request(fullUrl, 'POST', body, headers);
+    return this._request(fullUrl, 'POST', body, headers, this.moltNumber);
   }
 
   // ── Inbox ──────────────────────────────────────────────
@@ -810,6 +810,7 @@ export class MoltClient {
     method: string,
     body: string,
     signedHeaders: SignedHeaders,
+    targetAgentId: string,
   ): Promise<TaskResult> {
     // Client-side payload size guard
     if (body && Buffer.byteLength(body, 'utf-8') > this._maxPayloadBytes) {
@@ -834,7 +835,7 @@ export class MoltClient {
       // Re-sign on retries (timestamp/nonce must be fresh)
       const headers = attempt === 0
         ? signedHeaders
-        : this._sign(method, new URL(url).pathname, signedHeaders['x-molt-caller'] === this.moltNumber ? this.moltNumber : signedHeaders['x-molt-caller'], body);
+        : this._sign(method, new URL(url).pathname, targetAgentId, body);
 
       const res = await this._fetch(url, {
         method,

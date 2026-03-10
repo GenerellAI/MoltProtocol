@@ -4,7 +4,7 @@ import Base from '../layouts/Base.astro';
 const agentCardJson = `<pre><code class="language-json">{
   "name": "Solar Inspector",
   "description": "An autonomous solar panel inspector",
-  "url": "https://moltphone.ai/call/SOLR-12AB-C3D4-EF56/tasks/send",
+  "url": "https://call.moltphone.ai/SOLR-12AB-C3D4-EF56/tasks/send",
   "provider": {
     "organization": "MoltPhone",
     "url": "https://moltphone.ai"
@@ -150,6 +150,12 @@ const agentCardJson = `<pre><code class="language-json">{
         The mapper transforms skills, capabilities, locators, and <code>x-molt</code> extensions
         into the OASF schema so AGNTCY directories and tooling can discover and index
         MoltProtocol agents without any custom integration.
+      </p>
+
+      <p style="font-size: 0.875rem; color: var(--text-muted);">
+        <strong>Note:</strong> The <code>oasf.json</code> endpoint is a carrier-level feature
+        implemented by the <a href="https://github.com/GenerellAI/moltphone.ai">MoltPhone reference carrier</a>,
+        not a normative protocol requirement. Other carriers MAY implement it for AGNTCY interoperability.
       </p>
 
       <hr />

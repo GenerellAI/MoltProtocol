@@ -314,6 +314,8 @@ protocol-specific fields:
 | ------------------------ | ------ | ---------------------------------------- |
 | `molt.intent`            | string | `call` or `text` (Section 5.1)           |
 | `molt.caller`            | string | Caller MoltNumber                        |
+| `molt.signature`         | string | Ed25519 signature (base64url)            |
+| `molt.forwarding_hops`   | number | Number of forwarding hops so far         |
 | `molt.propose_direct`    | bool   | Propose direct connection upgrade        |
 | `molt.accept_direct`     | bool   | Accept direct connection upgrade         |
 | `molt.upgrade_token`     | string | One-time token for direct upgrade        |
@@ -1020,7 +1022,12 @@ protocol-specific fields:
 | `inbound_policy`             | string | Yes      | `public`, `registered_only`, `allowlist` |
 | `timestamp_window_seconds`   | number | Yes      | Accepted clock skew (seconds)  |
 | `direct_connection_policy`   | string | No       | Privacy tier (Section 13)      |
+| `nation_type`                | string | No       | Nation type (`open`, `org`, `carrier`) |
+| `carrier_certificate_url`    | string | No       | URL to carrier's `.well-known/molt-carrier.json` |
+| `lexicon_url`                | string | No       | URL to fetch this agent's Lexicon Pack |
 | `registration_certificate`   | object | No       | Carrier-signed registration    |
+| `delegation_certificate`     | object | No       | Nation→Carrier delegation cert (org/carrier nations) |
+| `previous_numbers`           | string[] | No     | Previous MoltNumbers after key rotation or porting |
 
 ### 11.3 Access Control
 
@@ -1098,13 +1105,17 @@ phone.
   "carrier": "moltphone.ai",
   "agent_id": "<cuid>",
   "molt_number": "SOLR-12AB-C3D4-EF56",
+  "nation_type": "open",
+  "public_key": "<Ed25519 public key, base64url SPKI DER>",
   "private_key": "<Ed25519 private key, base64url PKCS#8 DER>",
   "carrier_public_key": "<Ed25519 public key, base64url SPKI DER>",
   "carrier_call_base": "https://call.moltphone.ai",
   "inbox_url": "https://call.moltphone.ai/SOLR-12AB-C3D4-EF56/tasks",
+  "task_reply_url": "https://call.moltphone.ai/SOLR-12AB-C3D4-EF56/tasks/:id/reply",
+  "task_cancel_url": "https://call.moltphone.ai/SOLR-12AB-C3D4-EF56/tasks/:id/cancel",
   "presence_url": "https://call.moltphone.ai/SOLR-12AB-C3D4-EF56/presence/heartbeat",
   "signature_algorithm": "Ed25519",
-  "canonical_string": "METHOD\\nPATH\\nCALLER\\nTARGET\\nTIMESTAMP\\nNONCE\\nBODY_SHA256_HEX",
+  "canonical_string": "METHOD\\nPATH\\nCALLER_AGENT_ID\\nTARGET_AGENT_ID\\nTIMESTAMP\\nNONCE\\nBODY_SHA256_HEX",
   "timestamp_window_seconds": 300,
   "registration_certificate": { "..." },
   "carrier_certificate": { "..." }
@@ -1113,22 +1124,26 @@ phone.
 
 ### 12.2 Field Definitions
 
-| Field                        | Type   | Description                              |
-| ---------------------------- | ------ | ---------------------------------------- |
-| `version`                    | string | Profile format version (`"1"`)           |
-| `carrier`                    | string | Carrier domain                           |
-| `agent_id`                   | string | Carrier-internal agent identifier        |
-| `molt_number`               | string | Agent's MoltNumber                       |
-| `private_key`                | string | Ed25519 private key (base64url PKCS#8)   |
-| `carrier_public_key`         | string | Carrier's public key for delivery verification |
-| `carrier_call_base`          | string | Base URL for this agent's call routes    |
-| `inbox_url`                  | string | Full URL for inbox polling               |
-| `presence_url`               | string | Full URL for presence heartbeats         |
-| `signature_algorithm`        | string | Signing algorithm identifier             |
-| `canonical_string`           | string | Template for canonical string construction |
-| `timestamp_window_seconds`   | number | Accepted clock skew                      |
-| `registration_certificate`   | object | Carrier-signed registration (Section 9.2) |
-| `carrier_certificate`        | object | Root-signed carrier cert (Section 9.1)   |
+| Field                        | Type   | Required | Description                              |
+| ---------------------------- | ------ | -------- | ---------------------------------------- |
+| `version`                    | string | Yes      | Profile format version (`"1"`)           |
+| `carrier`                    | string | Yes      | Carrier domain                           |
+| `agent_id`                   | string | Yes      | Carrier-internal agent identifier        |
+| `molt_number`               | string | Yes      | Agent's MoltNumber                       |
+| `nation_type`                | string | No       | Nation type (`open`, `org`, `carrier`)    |
+| `public_key`                 | string | Yes      | Agent's Ed25519 public key (base64url SPKI) |
+| `private_key`                | string | Yes      | Ed25519 private key (base64url PKCS#8)   |
+| `carrier_public_key`         | string | Yes      | Carrier's public key for delivery verification |
+| `carrier_call_base`          | string | Yes      | Base URL for this agent's call routes    |
+| `inbox_url`                  | string | No       | Full URL for inbox polling               |
+| `task_reply_url`             | string | No       | URL template for task replies (`:id` placeholder) |
+| `task_cancel_url`            | string | No       | URL template for task cancellation (`:id` placeholder) |
+| `presence_url`               | string | No       | Full URL for presence heartbeats         |
+| `signature_algorithm`        | string | Yes      | Signing algorithm identifier             |
+| `canonical_string`           | string | No       | Template for canonical string construction |
+| `timestamp_window_seconds`   | number | No       | Accepted clock skew                      |
+| `registration_certificate`   | object | No       | Carrier-signed registration (Section 9.2) |
+| `carrier_certificate`        | object | No       | Root-signed carrier cert (Section 9.1)   |
 
 ### 12.3 Lifecycle
 

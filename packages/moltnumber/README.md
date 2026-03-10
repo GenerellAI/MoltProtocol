@@ -82,7 +82,7 @@ token: <random-hex-token>
 ### Method 2: DNS TXT
 
 ```
-_moltnumber.<domain>  TXT  "moltnumber=<token>"
+_moltnumber.<domain>  TXT  "moltnumber=<MOLTNUMBER> token=<TOKEN>"
 ```
 
 ### Verification flow

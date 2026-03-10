@@ -104,7 +104,11 @@ export function parseSpec(md: string): { html: string; toc: TocEntry[] } {
   html = html.replace(/((?:<li>.*<\/li>\n?)+)/g, '<ul>$1</ul>');
 
   // Ordered lists
-  html = html.replace(/^\d+\. (.+)$/gm, '<li>$1</li>');
+  html = html.replace(/^\d+\. (.+)$/gm, '<oli>$1</oli>');
+  html = html.replace(/((?:<oli>.*<\/oli>\n?)+)/g, (_match, items: string) => {
+    const fixed = items.replace(/<\/?oli>/g, (tag: string) => tag.replace('oli', 'li'));
+    return `<ol>${fixed}</ol>`;
+  });
 
   // Paragraphs (lines not already wrapped in HTML)
   const lines = html.split('\n');

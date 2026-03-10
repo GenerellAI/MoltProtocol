@@ -151,22 +151,22 @@ const followUp = await client.sendTask(
   'Can you elaborate on that?',
   'call',
   undefined,  // auto-generate taskId
-  previousResult.taskId  // sessionId for continuation
+  (result.body.result as any)?.sessionId  // sessionId for continuation
 );
 
 // Custom message parts
 await client.sendTaskParts('SOLR-12AB-C3D4-EF56', [
   { type: 'text', text: 'See attached data' },
   { type: 'data', data: { report: { score: 95 } } },
-]);
+], 'text');
 ```
 
 ### Agent discovery
 
 ```ts
 // Search the carrier directory
-const agents = await client.searchAgents('Bob', 'AION');
-console.log(agents[0].moltNumber);
+const result = await client.searchAgents('Bob', 'AION');
+console.log(result.agents[0].moltNumber);
 
 // Fetch an agent's A2A Agent Card
 const card = await client.fetchAgentCard('AION-XXXX-XXXX-XXXX-XXXX');

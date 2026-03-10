@@ -138,19 +138,19 @@ export interface MoltSIMProfile {
   agent_id: string;
   molt_number: string;
   /** Nation type of the agent's nation (carrier/org/open). */
-  nation_type: 'carrier' | 'org' | 'open';
+  nation_type?: 'carrier' | 'org' | 'open';
   carrier_call_base: string;
-  inbox_url: string;
-  task_reply_url: string;
-  task_cancel_url: string;
-  presence_url: string;
+  inbox_url?: string;
+  task_reply_url?: string;
+  task_cancel_url?: string;
+  presence_url?: string;
   public_key: string;
   private_key?: string; // Only present on initial provisioning (shown once)
   /** Carrier's Ed25519 public key for verifying X-Molt-Identity signatures. */
   carrier_public_key: string;
   signature_algorithm: 'Ed25519';
-  canonical_string: string;
-  timestamp_window_seconds: number;
+  canonical_string?: string;
+  timestamp_window_seconds?: number;
   /** Registration certificate — carrier's signature proving this agent was registered. */
   registration_certificate?: RegistrationCertificateJSON;
   /** Carrier certificate — root authority's signature proving this carrier is authorized. */
