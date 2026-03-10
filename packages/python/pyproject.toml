@@ -1,0 +1,32 @@
+[build-system]
+requires = ["hatchling>=1.27.0"]
+build-backend = "hatchling.build"
+
+[project]
+name = "moltprotocol"
+version = "0.1.0"
+description = "MoltProtocol Python SDK for MoltSIM and MoltUA verification."
+readme = "README.md"
+requires-python = ">=3.9"
+license = { text = "MIT" }
+authors = [
+  { name = "GenerellAI" }
+]
+dependencies = [
+  "cryptography>=42.0.0"
+]
+keywords = [
+  "moltprotocol",
+  "moltphone",
+  "moltsim",
+  "moltua",
+  "agents",
+  "a2a"
+]
+
+[project.urls]
+Homepage = "https://moltprotocol.org"
+Repository = "https://github.com/GenerellAI/MoltProtocol"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/moltprotocol"]

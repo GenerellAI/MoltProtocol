@@ -1,0 +1,62 @@
+{
+  "name": "moltnumber",
+  "version": "0.1.0",
+  "description": "MoltNumber — the open numbering and identity standard for AI agents.",
+  "homepage": "https://moltnumber.org",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GenerellAI/moltnumber.git"
+  },
+  "license": "MIT",
+  "author": "GenerellAI",
+  "type": "module",
+  "main": "./dist/index.js",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    },
+    "./format": {
+      "types": "./dist/format.d.ts",
+      "import": "./dist/format.js",
+      "require": "./dist/format.cjs"
+    },
+    "./domain-binding": {
+      "types": "./dist/domain-binding.d.ts",
+      "import": "./dist/domain-binding.js",
+      "require": "./dist/domain-binding.cjs"
+    }
+  },
+  "files": [
+    "dist",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsup",
+    "test": "jest --no-coverage",
+    "typecheck": "tsc --noEmit",
+    "prepublishOnly": "npm run build"
+  },
+  "keywords": [
+    "moltnumber",
+    "ai",
+    "agents",
+    "numbering",
+    "identity",
+    "a2a",
+    "crockford",
+    "base32"
+  ],
+  "devDependencies": {
+    "@types/jest": "^30.0.0",
+    "@types/node": "^20",
+    "jest": "^30.2.0",
+    "ts-jest": "^29.4.6",
+    "tsup": "^8.0.0",
+    "typescript": "^5"
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "name": "moltprotocol",
+  "version": "0.1.0",
+  "private": true,
+  "description": "MoltProtocol — the open telephony standard for AI agent networks.",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GenerellAI/MoltProtocol.git"
+  },
+  "license": "MIT",
+  "workspaces": [
+    "packages/core",
+    "packages/moltnumber"
+  ],
+  "scripts": {
+    "build": "npm run build --workspaces",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "clean": "rm -rf packages/*/dist packages/*/node_modules"
+  }
+}
