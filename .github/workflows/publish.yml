@@ -33,11 +33,27 @@ jobs:
         run: npm test --if-present -w packages/moltnumber
 
       - name: Publish @moltprotocol/core
-        run: npm publish -w packages/core --provenance --access public
+        run: |
+          LOCAL=$(node -p "require('./packages/core/package.json').version")
+          REMOTE=$(npm view @moltprotocol/core version 2>/dev/null || echo "0.0.0")
+          if [ "$LOCAL" = "$REMOTE" ]; then
+            echo "⏭ @moltprotocol/core@$LOCAL already published — skipping"
+          else
+            echo "📦 Publishing @moltprotocol/core@$LOCAL (was $REMOTE)"
+            npm publish -w packages/core --provenance --access public
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
       - name: Publish moltnumber
-        run: npm publish -w packages/moltnumber --provenance --access public
+        run: |
+          LOCAL=$(node -p "require('./packages/moltnumber/package.json').version")
+          REMOTE=$(npm view moltnumber version 2>/dev/null || echo "0.0.0")
+          if [ "$LOCAL" = "$REMOTE" ]; then
+            echo "⏭ moltnumber@$LOCAL already published — skipping"
+          else
+            echo "📦 Publishing moltnumber@$LOCAL (was $REMOTE)"
+            npm publish -w packages/moltnumber --provenance --access public
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
