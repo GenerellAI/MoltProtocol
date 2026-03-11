@@ -15,8 +15,18 @@
 
 // ── Intent ───────────────────────────────────────────────
 
-/** The intent of a task.  `call` = multi-turn, `text` = fire-and-forget. */
-export type TaskIntent = 'call' | 'text';
+/**
+ * The intent of a task.
+ *
+ * Well-known intents:
+ * - `'call'` — multi-turn conversation (streaming, sessionId auto-generated)
+ * - `'text'` — fire-and-forget (single message, completed on first response)
+ *
+ * Custom intents (any other non-empty string) are passed through by the
+ * carrier with `text` delivery semantics — fire-and-forget, completed on
+ * first response — unless the webhook explicitly declares a different status.
+ */
+export type TaskIntent = 'call' | 'text' | (string & {});
 
 // ── Task status (A2A states) ─────────────────────────────
 
@@ -43,8 +53,10 @@ export interface DataPart {
 
 export interface FilePart {
   type: 'file';
-  mimeType: string;
-  uri: string;
+  mimeType?: string;
+  uri?: string;
+  /** Base64-encoded file bytes (alternative to uri). */
+  bytes?: string;
 }
 
 export type MessagePart = TextPart | DataPart | FilePart;
@@ -61,7 +73,7 @@ export interface MoltMetadata {
   'molt.caller'?: string;
   /** Ed25519 signature of the canonical string, base64url-encoded. */
   'molt.signature'?: string;
-  /** Task intent. */
+  /** Task intent (`call`, `text`, or any custom string). */
   'molt.intent'?: TaskIntent;
   /** Number of forwarding hops so far. */
   'molt.forwarding_hops'?: number;

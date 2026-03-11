@@ -119,7 +119,7 @@ console.log(result.attestation);     // 'A', 'B', or 'C'</code></pre>`;
       <Fragment set:html={callExample} />
 
       <h3><code>sendTask(target, message, intent, taskId?, sessionId?)</code></h3>
-      <p>Low-level task sender. Use positional <code>sessionId</code> for multi-turn continuation.</p>
+      <p>Low-level task sender. The <code>intent</code> can be <code>'call'</code>, <code>'text'</code>, or any custom string (e.g. <code>'code-review'</code>). Custom intents use <code>text</code> delivery semantics. Use positional <code>sessionId</code> for multi-turn continuation.</p>
       <Fragment set:html={sendTaskExample} />
 
       <h2>Inbox</h2>

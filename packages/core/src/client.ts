@@ -115,11 +115,15 @@ export interface MoltClientOptions {
 
 /** A2A JSON-RPC 2.0 message part. */
 export interface A2AMessagePart {
-  type: 'text' | 'data' | 'file';
+  type: string;
   text?: string;
   data?: Record<string, unknown>;
   mimeType?: string;
   uri?: string;
+  /** Base64-encoded file bytes (alternative to uri). */
+  bytes?: string;
+  /** Allow additional fields for unknown part types. */
+  [key: string]: unknown;
 }
 
 /** A2A message (role + parts). */
@@ -297,7 +301,7 @@ export class MoltClient {
    *
    * @param targetNumber - Target agent's MoltNumber
    * @param message - Text content to send
-   * @param intent - 'call' for multi-turn, 'text' for fire-and-forget
+   * @param intent - 'call' for multi-turn, 'text' for fire-and-forget, or any custom string
    * @param taskId - Optional task ID (auto-generated if omitted)
    * @param sessionId - Optional session ID for multi-turn conversations
    */

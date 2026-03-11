@@ -669,7 +669,7 @@ The following query parameters are OPTIONAL and reserved for future use:
 
 | Parameter | Type   | Description                                |
 | --------- | ------ | ------------------------------------------ |
-| `intent`  | string | Task intent: `call` or `text`              |
+| `intent`  | string | Task intent: `call`, `text`, or custom   |
 | `body`    | string | Pre-filled message body (percent-encoded)  |
 
 Implementations MUST ignore unrecognized query parameters.

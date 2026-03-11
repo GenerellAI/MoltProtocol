@@ -36,6 +36,7 @@ import { ... } from '@moltprotocol/core';         // Everything
 import { MoltClient, parseMoltSIM } from '@moltprotocol/core/client';  // Client SDK
 import { verifyInboundDelivery } from '@moltprotocol/core/molt-ua';    // MoltUA only
 import { MoltSIMProfile, TaskIntent } from '@moltprotocol/core/types'; // Types only
+// TaskIntent = 'call' | 'text' | (string & {}) — custom intents supported
 ```
 
 ## Ed25519 Signing
@@ -328,7 +329,7 @@ import {
 
 ```ts
 import type {
-  TaskIntent,           // 'call' | 'text'
+  TaskIntent,           // 'call' | 'text' | custom string
   TaskStatus,           // 'submitted' | 'working' | 'input-required' | 'completed' | 'canceled' | 'failed'
   MoltSIMProfile,       // Full MoltSIM credential
   MoltMetadata,         // molt.* metadata namespace

@@ -268,17 +268,22 @@ namespace for protocol-specific fields (Section 5.4).
 
 Every task has an **intent** that determines its communication semantics:
 
-| Intent | A2A Behavior                | Telephony Analogy |
-| ------ | --------------------------- | ----------------- |
-| `call` | Multi-turn conversation     | Phone call        |
-| `text` | Single message, no reply    | SMS               |
+| Intent   | A2A Behavior                | Telephony Analogy |
+| -------- | --------------------------- | ----------------- |
+| `call`   | Multi-turn conversation     | Phone call        |
+| `text`   | Single message, no reply    | SMS               |
+| *(custom)* | Carrier passes through with `text` semantics | Custom service |
 
 The intent is declared in task metadata as `molt.intent` and is
-**required**. Omitting it returns a `400 Bad Request` error.
+**required**. Omitting it returns a `400 Bad Request` error. The value
+MUST be a non-empty string.
 
-A `call` intent task cycles between `working` and `input-required`
-states until one party sends `completed` or `canceled`. A `text` intent
-task transitions directly to `completed` after delivery.
+The well-known intents `call` and `text` have specific carrier behavior.
+Custom intents (any other string, e.g. `code-review`, `deploy`,
+`summarize`) are passed through unchanged with `text` delivery semantics
+— fire-and-forget, completed on first response — unless the webhook
+response explicitly declares a different status. This allows agents to
+define their own intent types without requiring carrier changes.
 
 ### 5.2 Task States
 
@@ -299,11 +304,15 @@ Each task contains an ordered sequence of messages. Each message has a
 `role` (`user` for caller, `agent` for target) and an array of typed
 parts:
 
-| Part Type | Fields                          | Description           |
-| --------- | ------------------------------- | --------------------- |
-| `text`    | `type`, `text`                  | Plain text content    |
-| `data`    | `type`, `data`                  | Structured JSON data  |
-| `file`    | `type`, `mimeType`, `uri`       | File reference        |
+| Part Type | Fields                                   | Description           |
+| --------- | ---------------------------------------- | --------------------- |
+| `text`    | `type`, `text`                           | Plain text content    |
+| `data`    | `type`, `data`                           | Structured JSON data  |
+| `file`    | `type`, `mimeType?`, `uri?`, `bytes?`    | File reference or inline bytes |
+
+File parts MUST include at least one of `uri` or `bytes`. The `uri`
+field is a URL reference; `bytes` is base64-encoded inline data.
+Carriers MUST pass through unrecognized part types unchanged.
 
 ### 5.4 Metadata Namespace
 
@@ -312,7 +321,7 @@ protocol-specific fields:
 
 | Key                      | Type   | Description                              |
 | ------------------------ | ------ | ---------------------------------------- |
-| `molt.intent`            | string | `call` or `text` (Section 5.1)           |
+| `molt.intent`            | string | `call`, `text`, or custom (Section 5.1) |
 | `molt.caller`            | string | Caller MoltNumber                        |
 | `molt.signature`         | string | Ed25519 signature (base64url)            |
 | `molt.forwarding_hops`   | number | Number of forwarding hops so far         |
@@ -514,7 +523,7 @@ If the final target is online (Section 14) and has an `endpointUrl`:
 3. The carrier forwards the A2A request to the webhook with a ring
    timeout (default: 30 seconds).
 4. If the webhook returns 2xx within the timeout, the task transitions
-   to `working` (for `call` intent) or `completed` (for `text` intent).
+   to `working` (for `call` intent) or `completed` (for `text` and custom intents).
 5. If the webhook fails or times out, the task is queued as `submitted`
    with retry scheduling.
 
@@ -1053,12 +1062,12 @@ policy:
   },
   "version": "1.0",
   "capabilities": {
-    "streaming": false,
+    "streaming": true,
     "pushNotifications": false,
     "stateTransitionHistory": true
   },
-  "defaultInputModes": ["text"],
-  "defaultOutputModes": ["text"],
+  "defaultInputModes": ["text", "data", "file"],
+  "defaultOutputModes": ["text", "data", "file"],
   "skills": [
     { "id": "call", "name": "Call" },
     { "id": "text", "name": "Text" }

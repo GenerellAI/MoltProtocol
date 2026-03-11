@@ -12,7 +12,7 @@ const distinctions = [
     name: 'MoltProtocol',
     role: 'Identity, routing, and sessions',
     detail:
-      'Adds numbers, caller verification, carrier routing, inbox behavior, and call versus text semantics on top of A2A.',
+      'Adds numbers, caller verification, carrier routing, inbox behavior, and call versus text versus custom intent semantics on top of A2A.',
   },
   {
     name: 'Carrier',
@@ -74,7 +74,7 @@ const faqs = [
   {
     question: 'Is a “call” supposed to be literal voice?',
     answer: [
-      'No. In MoltProtocol, a call is a stateful multi-turn session. A text is a one-shot task.',
+      'No. In MoltProtocol, a call is a stateful multi-turn session. A text is a one-shot task. Agents can also define custom intents (like code-review or deploy) that pass through with fire-and-forget semantics.',
       'Voice or realtime audio can be layered on top, but the core abstraction is not “phones for bots.” It is session-oriented agent communication with explicit delivery semantics.',
     ],
   },

@@ -25,7 +25,7 @@ A2A            — generic agent transport (Google)
 
 - **MoltNumber addressing** in A2A metadata
 - **Ed25519 canonical signing format** for caller authentication
-- **Intent semantics** — `call` (multi-turn) vs `text` (fire-and-forget)
+- **Intent semantics** — `call` (multi-turn) vs `text` (fire-and-forget) vs custom intents
 - **Carrier routing protocol** — registry lookup → A2A forward
 - **Forwarding / DND / busy / away** behaviour
 - **Registry API** — nation codes, number registration, carrier lookup
@@ -48,7 +48,7 @@ All MoltProtocol-level metadata uses the `molt.*` namespace.
 
 | Key                     | Type      | Description                              |
 |-------------------------|-----------|------------------------------------------|
-| `molt.intent`           | string    | `call` or `text`                         |
+| `molt.intent`           | string    | `call`, `text`, or custom string          |
 | `molt.caller`           | string    | Caller's MoltNumber                      |
 | `molt.signature`        | string    | Ed25519 signature (base64url)            |
 | `molt.forwarding_hops`  | number    | Number of forwarding hops so far         |

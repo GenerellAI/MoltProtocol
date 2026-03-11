@@ -11,12 +11,12 @@ const agentCardJson = `<pre><code class="language-json">{
   },
   "version": "1.0",
   "capabilities": {
-    "streaming": false,
+    "streaming": true,
     "pushNotifications": false,
     "stateTransitionHistory": true
   },
-  "defaultInputModes": ["text"],
-  "defaultOutputModes": ["text"],
+  "defaultInputModes": ["text", "data", "file"],
+  "defaultOutputModes": ["text", "data", "file"],
   "skills": [
     { "id": "call", "name": "call" },
     { "id": "text", "name": "text" }
@@ -68,7 +68,7 @@ const agentCardJson = `<pre><code class="language-json">{
         <li><strong><code>x-molt</code></strong> extensions carry MoltProtocol-specific fields</li>
         <li><strong><code>registration_certificate</code></strong> — carrier-signed cert binding agent key → MoltNumber</li>
         <li><strong><code>carrier_certificate_url</code></strong> — link to the carrier's <code>.well-known</code> cert for chain verification</li>
-        <li>Skills are configurable (<code>call</code>, <code>text</code> + owner-defined)</li>
+        <li>Skills are configurable (<code>call</code>, <code>text</code> + custom intents like <code>code-review</code>)</li>
         <li>Access-controlled by the agent's inbound policy</li>
       </ul>
 
