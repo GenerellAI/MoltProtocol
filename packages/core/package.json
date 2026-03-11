@@ -1,6 +1,6 @@
 {
   "name": "@moltprotocol/core",
-  "version": "0.1.1",
+  "version": "0.2.0",
   "description": "MoltProtocol core SDK for MoltSIM, MoltUA, and agent networking.",
   "homepage": "https://moltprotocol.org",
   "repository": {

@@ -229,8 +229,13 @@ export class MoltClient {
   /** This agent's MoltNumber. */
   readonly moltNumber: string;
 
-  /** Carrier dial base URL. */
-  readonly carrierDialBase: string;
+  /** Carrier call base URL (e.g. `https://moltphone.ai/call/SOLR-1234-5678-9ABC`). */
+  readonly carrierCallBase: string;
+
+  /** @deprecated Use {@link carrierCallBase} instead. Will be removed in v1.0. */
+  get carrierDialBase(): string {
+    return this.carrierCallBase;
+  }
 
   private readonly _fetch: typeof globalThis.fetch;
   private readonly _strictMode: boolean;
@@ -257,7 +262,7 @@ export class MoltClient {
 
     this.profile = profile;
     this.moltNumber = profile.molt_number;
-    this.carrierDialBase = profile.carrier_call_base.replace(/\/+$/, '');
+    this.carrierCallBase = profile.carrier_call_base.replace(/\/+$/, '');
 
     this._fetch = options.fetch ?? globalThis.fetch;
     this._strictMode = options.strictMode ?? true;
@@ -315,7 +320,7 @@ export class MoltClient {
     const id = taskId ?? crypto.randomUUID();
 
     // Build the carrier URL: replace our moltNumber segment with the target
-    const carrierBase = this.carrierDialBase.replace(
+    const carrierBase = this.carrierCallBase.replace(
       new RegExp(`/${escapeRegex(this.moltNumber)}$`),
       '',
     );
@@ -358,7 +363,7 @@ export class MoltClient {
     taskId?: string,
   ): Promise<TaskResult> {
     const id = taskId ?? crypto.randomUUID();
-    const carrierBase = this.carrierDialBase.replace(
+    const carrierBase = this.carrierCallBase.replace(
       new RegExp(`/${escapeRegex(this.moltNumber)}$`),
       '',
     );
@@ -390,7 +395,7 @@ export class MoltClient {
    * @param message - Text content
    */
   async reply(taskId: string, message: string): Promise<TaskResult> {
-    const replyUrlTemplate = this.profile.task_reply_url || `${this.carrierDialBase}/tasks/:id/reply`;
+    const replyUrlTemplate = this.profile.task_reply_url || `${this.carrierCallBase}/tasks/:id/reply`;
     const fullUrl = replyUrlTemplate.replace(':id', taskId);
     const canonicalPath = new URL(fullUrl).pathname;
 
@@ -414,7 +419,7 @@ export class MoltClient {
    * Reply to a task with custom message parts.
    */
   async replyParts(taskId: string, parts: A2AMessagePart[]): Promise<TaskResult> {
-    const replyUrlTemplate = this.profile.task_reply_url || `${this.carrierDialBase}/tasks/:id/reply`;
+    const replyUrlTemplate = this.profile.task_reply_url || `${this.carrierCallBase}/tasks/:id/reply`;
     const fullUrl = replyUrlTemplate.replace(':id', taskId);
     const canonicalPath = new URL(fullUrl).pathname;
 
@@ -435,7 +440,7 @@ export class MoltClient {
    * Cancel / hang up a task.
    */
   async cancel(taskId: string): Promise<TaskResult> {
-    const cancelUrlTemplate = this.profile.task_cancel_url || `${this.carrierDialBase}/tasks/:id/cancel`;
+    const cancelUrlTemplate = this.profile.task_cancel_url || `${this.carrierCallBase}/tasks/:id/cancel`;
     const fullUrl = cancelUrlTemplate.replace(':id', taskId);
     const canonicalPath = new URL(fullUrl).pathname;
 
@@ -456,7 +461,7 @@ export class MoltClient {
    * Authenticated via Ed25519. Also acts as a presence heartbeat.
    */
   async pollInbox(): Promise<InboxResult> {
-    const inboxUrl = this.profile.inbox_url || `${this.carrierDialBase}/tasks`;
+    const inboxUrl = this.profile.inbox_url || `${this.carrierCallBase}/tasks`;
     const canonicalPath = new URL(inboxUrl).pathname;
 
     const headers = this._sign('GET', canonicalPath, this.moltNumber, '');
@@ -484,7 +489,7 @@ export class MoltClient {
    * Send a single presence heartbeat.
    */
   async heartbeat(): Promise<HeartbeatResult> {
-    const presenceUrl = this.profile.presence_url || `${this.carrierDialBase}/presence/heartbeat`;
+    const presenceUrl = this.profile.presence_url || `${this.carrierCallBase}/presence/heartbeat`;
     const canonicalPath = new URL(presenceUrl).pathname;
     const body = '';
 
@@ -572,7 +577,7 @@ export class MoltClient {
    * e.g. `https://moltphone.ai` from `https://moltphone.ai/call/MOLT-XXXX-...`
    */
   get carrierApiBase(): string {
-    return new URL(this.carrierDialBase).origin;
+    return new URL(this.carrierCallBase).origin;
   }
 
   /**
@@ -638,7 +643,7 @@ export class MoltClient {
     const cached = this._getCached<AgentCardResult>(cacheKey);
     if (cached) return cached;
 
-    const carrierBase = this.carrierDialBase.replace(
+    const carrierBase = this.carrierCallBase.replace(
       new RegExp(`/${escapeRegex(this.moltNumber)}$`),
       '',
     );
